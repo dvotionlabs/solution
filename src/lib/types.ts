@@ -28,6 +28,7 @@ export type Candidate = {
   phone: string;
   services: Service[];
   rank: number;
+  is_sample?: boolean;
 };
 
 export type Match = Candidate & { reason: string | null };

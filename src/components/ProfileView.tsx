@@ -1,30 +1,11 @@
+import { Avatar, Meta } from "@/components/ProfessionalCard";
 import { deliveryLabel, formatPrice, type Candidate } from "@/lib/types";
 
 export type ProfileData = Omit<Candidate, "rank">;
 
-function initials(name: string) {
-  return (
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((w) => w[0]?.toUpperCase())
-      .join("") || "?"
-  );
-}
-
-function Block({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="border-t border-line pt-5">
-      <h2 className="label">{title}</h2>
-      {children}
-    </section>
-  );
-}
-
 function Paragraphs({ text }: { text: string }) {
   return (
-    <div className="space-y-3 text-[15px] leading-relaxed">
+    <div className="space-y-3 leading-relaxed">
       {text
         .split(/\n\s*\n/)
         .filter((p) => p.trim())
@@ -37,140 +18,147 @@ function Paragraphs({ text }: { text: string }) {
   );
 }
 
+function Heading({ children }: { children: React.ReactNode }) {
+  return <h2 className="mb-2 text-lg font-semibold">{children}</h2>;
+}
+
+function List({ items }: { items: string[] }) {
+  return (
+    <ul className="space-y-1">
+      {items.map((q) => (
+        <li key={q}>{q}</li>
+      ))}
+    </ul>
+  );
+}
+
 // The full profile as a member of the public sees it.
+// Lays out in two columns when its container is wide enough.
 export function ProfileView({ p }: { p: ProfileData }) {
   const location = [p.area, p.city].filter(Boolean).join(", ");
-  const meta = [
-    location,
-    p.years_experience != null ? `${p.years_experience} years experience` : null,
-    p.offers_online ? "Online available" : null,
-  ].filter(Boolean);
 
   return (
-    <article className="space-y-6 rounded-lg border border-line bg-surface p-5 sm:p-7">
-      <header className="flex items-start gap-4">
-        {p.photo_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.photo_url} alt="" className="h-20 w-20 shrink-0 rounded-md object-cover" />
-        ) : (
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md border border-line text-xl font-medium text-muted">
-            {initials(p.display_name)}
-          </div>
-        )}
+    <article className="@container rounded-xl border border-line bg-surface">
+      <header className="flex items-start gap-5 border-b border-line p-6 sm:p-8">
+        <Avatar name={p.display_name} url={p.photo_url} size={76} />
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold leading-tight tracking-tight">{p.display_name || "Your name"}</h1>
-          {p.profession && <p className="mt-0.5">{p.profession}</p>}
-          {meta.length > 0 && <p className="mt-1 text-sm text-muted">{meta.join(" · ")}</p>}
+          <h1 className="text-[1.65rem] font-semibold leading-tight sm:text-[2rem] tracking-tight">{p.display_name || "Your name"}</h1>
+          <p className="mt-1 text-[1.05rem]">
+            {p.profession}
+            {location && <span className="text-muted">, {location}</span>}
+          </p>
+          <div className="mt-1.5">
+            <Meta
+              items={[
+                p.years_experience != null && `${p.years_experience} years experience`,
+                p.offers_online && "Online available",
+                p.is_sample && "Sample profile",
+              ]}
+            />
+          </div>
         </div>
       </header>
 
-      {p.headline && <p className="text-lg leading-snug">{p.headline}</p>}
+      <div className="grid gap-x-10 gap-y-8 p-6 sm:p-8 @3xl:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="space-y-8">
+          {p.headline && <p className="serif text-[1.35rem] leading-snug">{p.headline}</p>}
 
-      {p.specialties.length > 0 && (
-        <ul className="flex flex-wrap gap-1.5">
-          {p.specialties.map((s) => (
-            <li key={s} className="rounded border border-line px-2 py-0.5 text-xs text-muted">
-              {s}
-            </li>
+          {p.specialties.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {p.specialties.map((s) => (
+                <span key={s} className="tag">{s}</span>
+              ))}
+            </div>
+          )}
+
+          {p.bio && (
+            <section>
+              <Heading>About</Heading>
+              <Paragraphs text={p.bio} />
+            </section>
+          )}
+
+          {p.approach && (
+            <section>
+              <Heading>Approach</Heading>
+              <Paragraphs text={p.approach} />
+            </section>
+          )}
+
+          {p.extra_sections.map((e, i) => (
+            <section key={i}>
+              <Heading>{e.title}</Heading>
+              <Paragraphs text={e.body} />
+            </section>
           ))}
-        </ul>
-      )}
-
-      {p.bio && (
-        <Block title="About">
-          <Paragraphs text={p.bio} />
-        </Block>
-      )}
-
-      {p.approach && (
-        <Block title="Approach">
-          <Paragraphs text={p.approach} />
-        </Block>
-      )}
-
-      {p.services.length > 0 && (
-        <Block title="Services and prices">
-          <div className="divide-y divide-line">
-            {p.services.map((s, i) => (
-              <div key={i} className="flex items-start justify-between gap-4 py-3 first:pt-0">
-                <div className="min-w-0">
-                  <div className="font-medium">{s.name}</div>
-                  <div className="text-xs text-muted">
-                    {[s.duration_minutes ? `${s.duration_minutes} min` : null, deliveryLabel[s.delivery]]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </div>
-                  {s.description && <p className="mt-1 text-sm text-muted whitespace-pre-line">{s.description}</p>}
-                </div>
-                <div className="shrink-0 font-mono text-sm">{formatPrice(s.price_pence)}</div>
-              </div>
-            ))}
-          </div>
-        </Block>
-      )}
-
-      {(p.qualifications.length > 0 || p.education.length > 0) && (
-        <div className="grid gap-6 border-t border-line pt-5 sm:grid-cols-2">
-          {p.qualifications.length > 0 && (
-            <div>
-              <h2 className="label">Qualifications</h2>
-              <ul className="space-y-1 text-sm">
-                {p.qualifications.map((q) => (
-                  <li key={q}>{q}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {p.education.length > 0 && (
-            <div>
-              <h2 className="label">Education</h2>
-              <ul className="space-y-1 text-sm">
-                {p.education.map((q) => (
-                  <li key={q}>{q}</li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
-      )}
 
-      {p.equipment.length > 0 && (
-        <Block title="Equipment and facilities">
-          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-            {p.equipment.map((q) => (
-              <li key={q}>{q}</li>
-            ))}
-          </ul>
-        </Block>
-      )}
+        <aside className="space-y-8 @3xl:border-l @3xl:border-line @3xl:pl-10">
+          {p.services.length > 0 && (
+            <section>
+              <Heading>Services and prices</Heading>
+              <div className="divide-y divide-line">
+                {p.services.map((s, i) => (
+                  <div key={i} className="py-3 first:pt-1">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="font-medium">{s.name}</span>
+                      <span className="shrink-0 font-medium">{formatPrice(s.price_pence)}</span>
+                    </div>
+                    <div className="text-sm text-muted">
+                      {[s.duration_minutes ? `${s.duration_minutes} min` : null, deliveryLabel[s.delivery]].filter(Boolean).join(", ")}
+                    </div>
+                    {s.description && <p className="mt-1 text-sm text-muted whitespace-pre-line">{s.description}</p>}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
-      {p.extra_sections.map((e, i) => (
-        <Block key={i} title={e.title}>
-          <Paragraphs text={e.body} />
-        </Block>
-      ))}
+          {(p.contact_email || p.phone || p.website) && (
+            <section>
+              <Heading>Contact</Heading>
+              <div className="flex flex-col gap-2">
+                {p.contact_email && (
+                  <a className="btn" href={`mailto:${p.contact_email}`}>
+                    Email {p.display_name.split(" ")[0] || ""}
+                  </a>
+                )}
+                {p.phone && (
+                  <a className="btn btn-ghost" href={`tel:${p.phone}`}>
+                    Call {p.phone}
+                  </a>
+                )}
+                {p.website && (
+                  <a className="btn btn-ghost" href={p.website} target="_blank" rel="noreferrer">
+                    Visit website
+                  </a>
+                )}
+              </div>
+            </section>
+          )}
 
-      {(p.contact_email || p.phone || p.website) && (
-        <Block title="Contact">
-          <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
-            {p.contact_email && (
-              <a className="underline" href={`mailto:${p.contact_email}`}>
-                {p.contact_email}
-              </a>
-            )}
-            {p.phone && (
-              <a className="underline" href={`tel:${p.phone}`}>
-                {p.phone}
-              </a>
-            )}
-            {p.website && (
-              <a className="underline" href={p.website} target="_blank" rel="noreferrer">
-                {p.website.replace(/^https?:\/\//, "")}
-              </a>
-            )}
-          </div>
-        </Block>
-      )}
+          {p.qualifications.length > 0 && (
+            <section>
+              <Heading>Qualifications</Heading>
+              <List items={p.qualifications} />
+            </section>
+          )}
+
+          {p.education.length > 0 && (
+            <section>
+              <Heading>Education</Heading>
+              <List items={p.education} />
+            </section>
+          )}
+
+          {p.equipment.length > 0 && (
+            <section>
+              <Heading>Equipment and facilities</Heading>
+              <List items={p.equipment} />
+            </section>
+          )}
+        </aside>
+      </div>
     </article>
   );
 }

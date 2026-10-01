@@ -28,20 +28,22 @@ Pick up to 5 that best fit the request, best first. Only include a professional 
 For each, write one plain sentence explaining the fit, using only facts present in that professional's data. Never invent qualifications, prices, locations or claims.
 Return only JSON: {"matches": [{"id": string, "reason": string}]}.`;
 
-async function candidates(q: string, area: string | null, maxPence: number | null) {
+async function candidates(q: string, area: string | null, maxPence: number | null, samples = false) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("match_candidates", {
+  const { data, error } = await supabase.rpc("find_professionals", {
     q,
     area_q: area ?? "",
     max_price_pence: maxPence,
     lim: 30,
+    include_samples: samples,
   });
   if (error) throw error;
   return (data ?? []) as Candidate[];
 }
 
 export async function POST(request: Request) {
-  const { query } = (await request.json().catch(() => ({}))) as { query?: string };
+  const { query, samples } = (await request.json().catch(() => ({}))) as { query?: string; samples?: boolean };
+  const withSamples = samples === true;
   const text = (query ?? "").trim().slice(0, 500);
   if (!text) return NextResponse.json({ matches: [] });
 
@@ -52,7 +54,7 @@ export async function POST(request: Request) {
         .replace(/[^a-z0-9£\s]/g, " ")
         .split(/\s+/)
         .filter((w) => w.length > 2 && !STOPWORDS.has(w));
-      const found = await candidates(words.join(" or "), null, null);
+      const found = await candidates(words.join(" or "), null, null, withSamples);
       const matches: Match[] = found.slice(0, 5).map((c) => ({ ...c, reason: null }));
       return NextResponse.json({ matches, ai: false });
     }
@@ -61,8 +63,8 @@ export async function POST(request: Request) {
     const q = (parsed.keywords ?? []).join(" or ");
     const maxPence = parsed.max_price_gbp != null ? Math.round(parsed.max_price_gbp * 100) : null;
 
-    let found = await candidates(q, parsed.area, maxPence);
-    if (found.length === 0 && maxPence != null) found = await candidates(q, parsed.area, null);
+    let found = await candidates(q, parsed.area, maxPence, withSamples);
+    if (found.length === 0 && maxPence != null) found = await candidates(q, parsed.area, null, withSamples);
     if (found.length === 0) return NextResponse.json({ matches: [], ai: true });
 
     const slim = found.map((c) => ({

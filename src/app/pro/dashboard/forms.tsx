@@ -53,7 +53,7 @@ function Field(props: {
 
 function Panel({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg border border-line bg-surface p-5">
+    <section className="rounded-xl border border-line bg-surface p-5">
       {title && <h2 className="mb-3 font-semibold">{title}</h2>}
       {children}
     </section>
@@ -100,7 +100,7 @@ function AiBox({ hasProfile, followups }: { hasProfile: boolean; followups: stri
           onChange={(e) => setText(e.target.value)}
           placeholder={hasProfile ? "e.g. I now also offer online programming at £80 a month." : ""}
         />
-        {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+        {state.error && <p className="text-sm text-danger">{state.error}</p>}
         <div className="flex flex-wrap items-center gap-3">
           <button className="btn" disabled={pending || !text.trim()}>
             {pending ? "Working on it…" : hasProfile ? "Update my profile" : "Build my profile"}
@@ -170,7 +170,7 @@ function Visibility({ pro, services }: { pro: Pro; services: ServiceRow[] }) {
         ))}
       </ul>
       {!ready && !pro.published && <p className="mt-3 text-xs text-muted">* needed before you can appear in search</p>}
-      {state.error && <p className="mt-3 text-sm text-red-600">{state.error}</p>}
+      {state.error && <p className="mt-3 text-sm text-danger">{state.error}</p>}
     </Panel>
   );
 }
@@ -227,7 +227,7 @@ function PhotoPanel({ pro }: { pro: Pro }) {
           onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
         />
       </div>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
     </Panel>
   );
 }
@@ -264,7 +264,7 @@ function ServiceForm({ service, onDone }: { service?: ServiceRow; onDone: () => 
         <Field name="price" label="Price (£)" type="number" defaultValue={service?.price_pence != null ? service.price_pence / 100 : ""} />
         <Field name="duration" label="Duration (minutes)" type="number" defaultValue={service?.duration_minutes} />
       </div>
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state.error && <p className="text-sm text-danger">{state.error}</p>}
       <div className="flex gap-2">
         <button className="btn" disabled={pending}>{pending ? "Saving…" : service ? "Save service" : "Add service"}</button>
         <button type="button" className="btn btn-ghost" onClick={onDone}>Cancel</button>
@@ -288,7 +288,7 @@ function ServicesEditor({ services }: { services: ServiceRow[] }) {
               <div className="text-xs text-muted">
                 {[formatPrice(s.price_pence), s.duration_minutes ? `${s.duration_minutes} min` : null, deliveryLabel[s.delivery]]
                   .filter(Boolean)
-                  .join(" · ")}
+                  .join(", ")}
               </div>
             </div>
             <div className="flex shrink-0 gap-3 text-sm">
@@ -319,7 +319,7 @@ function ManualEditor({ pro, services, onClose }: { pro: Pro; services: ServiceR
   const [, start] = useTransition();
 
   return (
-    <div className="space-y-6 rounded-lg border border-line bg-surface p-5 sm:p-7">
+    <div className="space-y-6 rounded-xl border border-line bg-surface p-5 sm:p-7">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold">Edit details</h2>
         <button className="btn btn-ghost" onClick={onClose}>Done</button>
@@ -352,7 +352,7 @@ function ManualEditor({ pro, services, onClose }: { pro: Pro; services: ServiceR
           <Field name="phone" label="Phone" type="tel" defaultValue={pro.phone} />
           <Field name="website" label="Website" defaultValue={pro.website} />
         </div>
-        {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+        {state.error && <p className="text-sm text-danger">{state.error}</p>}
         <div className="flex items-center gap-3">
           <button className="btn" disabled={pending}>{pending ? "Saving…" : "Save details"}</button>
           {state.saved && !pending && <span className="text-sm text-muted">Saved</span>}

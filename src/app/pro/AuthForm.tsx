@@ -8,22 +8,20 @@ export function AuthForm() {
   const [state, action, pending] = useActionState<AuthState, FormData>(authenticate, {});
 
   return (
-    <div className="rounded-lg border border-line bg-surface p-6">
-      <div className="mb-6 flex gap-2">
-        <button
-          type="button"
-          className={`btn ${mode === "signup" ? "" : "btn-ghost"}`}
-          onClick={() => setMode("signup")}
-        >
-          Create account
-        </button>
-        <button
-          type="button"
-          className={`btn ${mode === "signin" ? "" : "btn-ghost"}`}
-          onClick={() => setMode("signin")}
-        >
-          Sign in
-        </button>
+    <div className="rounded-xl border border-line bg-surface p-6">
+      <div className="mb-6 grid grid-cols-2 rounded-lg bg-background p-1 text-sm" role="tablist">
+        {(["signup", "signin"] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            role="tab"
+            aria-selected={mode === m}
+            className={`rounded-md py-2 font-medium ${mode === m ? "bg-surface shadow-[0_0_0_1px_var(--line)]" : "text-muted"}`}
+            onClick={() => setMode(m)}
+          >
+            {m === "signup" ? "Create account" : "Sign in"}
+          </button>
+        ))}
       </div>
       <form action={action} className="space-y-4">
         <input type="hidden" name="mode" value={mode} />
@@ -43,7 +41,7 @@ export function AuthForm() {
             autoComplete={mode === "signup" ? "new-password" : "current-password"}
           />
         </div>
-        {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+        {state.error && <p className="text-sm text-danger">{state.error}</p>}
         {state.message && <p className="text-sm">{state.message}</p>}
         <button className="btn w-full" disabled={pending}>
           {pending ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}

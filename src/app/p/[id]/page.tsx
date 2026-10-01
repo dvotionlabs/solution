@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileView, type ProfileData } from "@/components/ProfileView";
@@ -16,7 +17,10 @@ export default async function ProfilePage({ params }: PageProps<"/p/[id]">) {
   const profile: ProfileData = { ...pro, services: services ?? [] };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
+    <div className="mx-auto max-w-5xl px-5 py-10">
+      <Link href={pro.is_sample ? "/?samples=1" : "/"} className="mb-5 inline-block text-sm text-muted hover:text-foreground">
+        Back to search
+      </Link>
       <ProfileView p={profile} />
     </div>
   );

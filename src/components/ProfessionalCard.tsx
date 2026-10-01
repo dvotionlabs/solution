@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { deliveryLabel, formatPrice, type Match } from "@/lib/types";
 
-function initials(name: string) {
+export function initials(name: string) {
   return (
     name
       .split(/\s+/)
@@ -12,99 +12,112 @@ function initials(name: string) {
   );
 }
 
-export function ProfessionalCard({ m, linkName = true }: { m: Match; linkName?: boolean }) {
+export function Avatar({ name, url, size = 72 }: { name: string; url: string; size?: number }) {
+  const style = { width: size, height: size };
+  return url ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={url} alt="" style={style} className="shrink-0 rounded-lg object-cover" />
+  ) : (
+    <div
+      style={style}
+      className="serif flex shrink-0 items-center justify-center rounded-lg bg-accent-soft text-xl font-semibold text-accent"
+    >
+      {initials(name)}
+    </div>
+  );
+}
+
+export function Meta({ items }: { items: (string | null | false | undefined)[] }) {
+  const shown = items.filter(Boolean) as string[];
+  if (!shown.length) return null;
+  return (
+    <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-sm text-muted">
+      {shown.map((t) => (
+        <span key={t}>{t}</span>
+      ))}
+    </div>
+  );
+}
+
+// A search result. Everything a client needs to compare is visible without clicking.
+export function ProfessionalCard({ m }: { m: Match }) {
   const location = [m.area, m.city].filter(Boolean).join(", ");
-  const meta = [
-    m.profession,
-    location,
-    m.years_experience != null ? `${m.years_experience} yrs experience` : null,
-    m.offers_online ? "Online available" : null,
-  ].filter(Boolean);
-  const name = m.display_name || "Your name";
 
   return (
-    <article className="rounded-lg border border-line bg-surface p-5">
+    <article className="rounded-xl border border-line bg-surface p-5 sm:p-6">
       <div className="flex items-start gap-4">
-        {m.photo_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={m.photo_url} alt="" className="h-16 w-16 shrink-0 rounded-md object-cover" />
-        ) : (
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md border border-line text-lg font-medium text-muted">
-            {initials(m.display_name)}
-          </div>
-        )}
-        <div className="min-w-0">
-          <h3 className="text-lg font-semibold leading-tight">
-            {linkName ? (
-              <Link href={`/p/${m.id}`} className="hover:underline">
-                {name}
-              </Link>
-            ) : (
-              name
-            )}
+        <Avatar name={m.display_name} url={m.photo_url} />
+        <div className="min-w-0 flex-1">
+          <h3 className="text-[1.4rem] font-semibold leading-tight">
+            <Link href={`/p/${m.id}`} className="hover:underline">
+              {m.display_name || "Unnamed professional"}
+            </Link>
           </h3>
-          <p className="mt-1 text-sm text-muted">{meta.join(" · ")}</p>
+          <p className="mt-0.5">
+            {m.profession}
+            {location && <span className="text-muted">, {location}</span>}
+          </p>
+          <div className="mt-1">
+            <Meta
+              items={[
+                m.years_experience != null && `${m.years_experience} years experience`,
+                m.offers_online && "Online available",
+                m.is_sample && "Sample profile",
+              ]}
+            />
+          </div>
         </div>
       </div>
 
-      {m.reason && <p className="mt-4 border-l-2 border-foreground pl-3 text-sm">{m.reason}</p>}
-      {m.headline && <p className="mt-4 text-sm">{m.headline}</p>}
+      {m.reason && (
+        <p className="mt-5 rounded-lg bg-accent-soft px-4 py-3 text-[0.95rem] leading-relaxed">{m.reason}</p>
+      )}
 
-      {m.qualifications.length > 0 && (
-        <div className="mt-4">
-          <div className="label">Qualifications</div>
-          <ul className="text-sm">
-            {m.qualifications.map((q) => (
-              <li key={q}>{q}</li>
-            ))}
-          </ul>
+      {m.headline && <p className="mt-4 leading-relaxed">{m.headline}</p>}
+
+      {m.specialties.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-1.5">
+          {m.specialties.map((s) => (
+            <span key={s} className="tag">{s}</span>
+          ))}
         </div>
       )}
 
-      {m.specialties.length > 0 && (
-        <ul className="mt-4 flex flex-wrap gap-1.5">
-          {m.specialties.map((s) => (
-            <li key={s} className="rounded border border-line px-2 py-0.5 text-xs text-muted">
-              {s}
-            </li>
-          ))}
-        </ul>
-      )}
-
       {m.services.length > 0 && (
-        <table className="mt-4 w-full text-sm">
-          <tbody>
-            {m.services.map((s, i) => (
-              <tr key={i} className="border-t border-line">
-                <td className="py-2 pr-2">
-                  <div className="font-medium">{s.name}</div>
-                  <div className="text-xs text-muted">
-                    {[s.duration_minutes ? `${s.duration_minutes} min` : null, deliveryLabel[s.delivery]]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </div>
-                </td>
-                <td className="py-2 text-right font-mono whitespace-nowrap">{formatPrice(s.price_pence)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="mt-5 divide-y divide-line border-y border-line">
+          {m.services.map((s, i) => (
+            <div key={i} className="flex items-baseline justify-between gap-4 py-2.5">
+              <div className="min-w-0">
+                <span className="font-medium">{s.name}</span>
+                <span className="ml-2 text-sm text-muted">
+                  {[s.duration_minutes ? `${s.duration_minutes} min` : null, deliveryLabel[s.delivery]].filter(Boolean).join(", ")}
+                </span>
+              </div>
+              <span className="shrink-0 font-medium">{formatPrice(s.price_pence)}</span>
+            </div>
+          ))}
+        </div>
       )}
 
-      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+      {m.qualifications.length > 0 && (
+        <p className="mt-4 text-sm">
+          <span className="text-muted">Qualifications: </span>
+          {m.qualifications.join("; ")}
+        </p>
+      )}
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        <Link href={`/p/${m.id}`} className="btn">
+          View full profile
+        </Link>
         {m.contact_email && (
-          <a className="underline" href={`mailto:${m.contact_email}`}>
-            {m.contact_email}
+          <a className="btn btn-ghost" href={`mailto:${m.contact_email}`}>
+            Email
           </a>
         )}
         {m.phone && (
-          <a className="underline" href={`tel:${m.phone}`}>
-            {m.phone}
-          </a>
-        )}
-        {m.website && (
-          <a className="underline" href={m.website} target="_blank" rel="noreferrer">
-            Website
+          <a className="btn btn-ghost" href={`tel:${m.phone}`}>
+            Call
           </a>
         )}
       </div>
