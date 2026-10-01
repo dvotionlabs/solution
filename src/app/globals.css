@@ -1,26 +1,81 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f7f5;
+  --surface: #ffffff;
+  --foreground: #111111;
+  --muted: #6b6b68;
+  --line: #e4e4e0;
+  --accent: #111111;
+  --accent-contrast: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-contrast: var(--accent-contrast);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #0c0c0c;
+    --surface: #151515;
     --foreground: #ededed;
+    --muted: #9a9a96;
+    --line: #2a2a2a;
+    --accent: #ededed;
+    --accent-contrast: #0c0c0c;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  outline: none;
+}
+.input:focus {
+  border-color: var(--foreground);
+}
+.label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+.btn:disabled {
+  opacity: 0.5;
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--line);
 }
