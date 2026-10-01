@@ -16,6 +16,9 @@ export type Candidate = {
   city: string;
   offers_online: boolean;
   specialties: string[];
+  qualifications: string[];
+  years_experience: number | null;
+  photo_url: string;
   website: string;
   contact_email: string;
   phone: string;

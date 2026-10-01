@@ -1,28 +1,68 @@
 import Link from "next/link";
 import { deliveryLabel, formatPrice, type Match } from "@/lib/types";
 
-export function ProfessionalCard({ m }: { m: Match }) {
+function initials(name: string) {
+  return (
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase())
+      .join("") || "?"
+  );
+}
+
+export function ProfessionalCard({ m, linkName = true }: { m: Match; linkName?: boolean }) {
   const location = [m.area, m.city].filter(Boolean).join(", ");
+  const meta = [
+    m.profession,
+    location,
+    m.years_experience != null ? `${m.years_experience} yrs experience` : null,
+    m.offers_online ? "Online available" : null,
+  ].filter(Boolean);
+  const name = m.display_name || "Your name";
+
   return (
     <article className="rounded-lg border border-line bg-surface p-5">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div>
-          <h3 className="text-lg font-semibold">
-            <Link href={`/p/${m.id}`} className="hover:underline">
-              {m.display_name || "Unnamed professional"}
-            </Link>
+      <div className="flex items-start gap-4">
+        {m.photo_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={m.photo_url} alt="" className="h-16 w-16 shrink-0 rounded-md object-cover" />
+        ) : (
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md border border-line text-lg font-medium text-muted">
+            {initials(m.display_name)}
+          </div>
+        )}
+        <div className="min-w-0">
+          <h3 className="text-lg font-semibold leading-tight">
+            {linkName ? (
+              <Link href={`/p/${m.id}`} className="hover:underline">
+                {name}
+              </Link>
+            ) : (
+              name
+            )}
           </h3>
-          <p className="text-sm text-muted">
-            {[m.profession, location, m.offers_online ? "Online available" : null].filter(Boolean).join(" · ")}
-          </p>
+          <p className="mt-1 text-sm text-muted">{meta.join(" · ")}</p>
         </div>
       </div>
 
-      {m.reason && <p className="mt-3 border-l-2 border-foreground pl-3 text-sm">{m.reason}</p>}
-      {m.headline && <p className="mt-3 text-sm">{m.headline}</p>}
+      {m.reason && <p className="mt-4 border-l-2 border-foreground pl-3 text-sm">{m.reason}</p>}
+      {m.headline && <p className="mt-4 text-sm">{m.headline}</p>}
+
+      {m.qualifications.length > 0 && (
+        <div className="mt-4">
+          <div className="label">Qualifications</div>
+          <ul className="text-sm">
+            {m.qualifications.map((q) => (
+              <li key={q}>{q}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {m.specialties.length > 0 && (
-        <ul className="mt-3 flex flex-wrap gap-1.5">
+        <ul className="mt-4 flex flex-wrap gap-1.5">
           {m.specialties.map((s) => (
             <li key={s} className="rounded border border-line px-2 py-0.5 text-xs text-muted">
               {s}
