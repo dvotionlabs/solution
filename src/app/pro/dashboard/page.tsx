@@ -2,7 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "../auth-actions";
-import { Editor, type Pro, type ServiceRow } from "./forms";
+import { Dashboard, type Pro, type ServiceRow } from "./forms";
+
+// Building a profile with the AI can take up to ~30 seconds.
+export const maxDuration = 120;
 
 function statusLine(pro: { subscription_status: string; trial_ends_at: string }) {
   if (pro.subscription_status === "active") return "Subscription active";
@@ -16,7 +19,7 @@ function statusLine(pro: { subscription_status: string; trial_ends_at: string })
   return "Subscription inactive";
 }
 
-export default async function Dashboard() {
+export default async function DashboardPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -29,7 +32,7 @@ export default async function Dashboard() {
     .from("services")
     .select("id, name, description, price_pence, duration_minutes, delivery")
     .eq("professional_id", user.id)
-    .order("created_at");
+    .order("price_pence", { nullsFirst: false });
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -49,7 +52,7 @@ export default async function Dashboard() {
           </form>
         </div>
       </div>
-      <Editor pro={pro as Pro} services={(services ?? []) as ServiceRow[]} />
+      <Dashboard pro={pro as Pro} services={(services ?? []) as ServiceRow[]} />
     </div>
   );
 }

@@ -12,11 +12,15 @@ export type Candidate = {
   profession: string;
   headline: string;
   bio: string;
+  approach: string;
   area: string;
   city: string;
   offers_online: boolean;
   specialties: string[];
   qualifications: string[];
+  education: string[];
+  equipment: string[];
+  extra_sections: { title: string; body: string }[];
   years_experience: number | null;
   photo_url: string;
   website: string;

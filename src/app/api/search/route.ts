@@ -30,7 +30,7 @@ Return only JSON: {"matches": [{"id": string, "reason": string}]}.`;
 
 async function candidates(q: string, area: string | null, maxPence: number | null) {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("search_candidates", {
+  const { data, error } = await supabase.rpc("match_candidates", {
     q,
     area_q: area ?? "",
     max_price_pence: maxPence,
@@ -70,6 +70,11 @@ export async function POST(request: Request) {
       profession: c.profession,
       headline: c.headline,
       bio: c.bio.slice(0, 600),
+      approach: c.approach.slice(0, 400),
+      years_experience: c.years_experience,
+      qualifications: c.qualifications,
+      education: c.education,
+      equipment: c.equipment,
       area: c.area,
       city: c.city,
       offers_online: c.offers_online,

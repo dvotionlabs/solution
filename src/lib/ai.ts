@@ -1,11 +1,17 @@
-// Small wrapper around the Anthropic Messages API used by the matcher.
-const MODEL = "claude-haiku-4-5";
+// Small wrapper around the Anthropic Messages API.
+export const FAST_MODEL = "claude-haiku-4-5";
+export const WRITING_MODEL = "claude-sonnet-5-5";
 
 export function aiEnabled() {
   return Boolean(process.env.ANTHROPIC_API_KEY);
 }
 
-export async function askJson<T>(system: string, user: string, maxTokens = 1024): Promise<T> {
+export async function askJson<T>(
+  system: string,
+  user: string,
+  maxTokens = 1024,
+  model: string = FAST_MODEL,
+): Promise<T> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -14,7 +20,7 @@ export async function askJson<T>(system: string, user: string, maxTokens = 1024)
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: MODEL,
+      model,
       max_tokens: maxTokens,
       system,
       messages: [{ role: "user", content: user }],
@@ -25,7 +31,8 @@ export async function askJson<T>(system: string, user: string, maxTokens = 1024)
   }
   const data = await res.json();
   const text: string = data.content?.find((b: { type: string }) => b.type === "text")?.text ?? "";
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error("AI response contained no JSON");
-  return JSON.parse(match[0]) as T;
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start < 0 || end < start) throw new Error("AI response contained no JSON");
+  return JSON.parse(text.slice(start, end + 1)) as T;
 }
