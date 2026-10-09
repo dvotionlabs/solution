@@ -1,6 +1,7 @@
 import {cookies} from 'next/headers';
 import {gcConfig,gcRequest,verifyBillingSession,type BillingRequest} from '@/lib/gocardless';
-import {getPlan,money} from '@/lib/pricing';
+import {money} from '@/lib/pricing';
+import {getPaymentPlan} from '@/lib/client-pricing';
 export const dynamic='force-dynamic';
 export default async function Complete(){
  const config=gcConfig(),cookie=(await cookies()).get('cgp_billing')?.value,id=config?verifyBillingSession(cookie,config.token):null;
@@ -10,7 +11,7 @@ export default async function Complete(){
   const mandate=billing?.mandate_request?.links?.mandate;
   if(billing?.status==='fulfilled'&&billing.metadata?.plan_id&&mandate){const list=await gcRequest(`/subscriptions?mandate=${encodeURIComponent(mandate)}&limit=100`);subscription=list.subscriptions?.find((s:{metadata?:Record<string,string>})=>s.metadata?.billing_request===id);}
  }catch{}
- const plan=getPlan(billing?.metadata?.plan_id),confirmed=billing?.status==='fulfilled';
+ const plan=getPaymentPlan(billing?.metadata?.plan_id),confirmed=billing?.status==='fulfilled';
  const active=subscription&&['active','pending_customer_approval'].includes(subscription.status);
  const title=active?'Your plan is set up.':confirmed&&!plan?'Your mandate is set up.':'Let’s confirm your setup.';
  const message=active&&subscription?`${plan?.label ?? 'Your coaching plan'} is set up at ${money(subscription.amount)} per month. GoCardless will email you the collection dates. Chris will be in touch to arrange your coaching.`:confirmed&&plan?'Your Direct Debit mandate has been authorised. We are confirming your monthly subscription. Please refresh this page in a moment. If it is still pending, contact Chris before starting again.':confirmed?'Your Direct Debit mandate has been authorised. Chris will arrange the coaching subscription you have agreed.':'We have not confirmed a completed setup in this session. If you finished the GoCardless form, contact Chris before starting again so he can check its status.';

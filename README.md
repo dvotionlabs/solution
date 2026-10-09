@@ -60,6 +60,14 @@ Stripe packs use hosted Payment Links; bank/card details never enter this app. S
 
 ## Operational records and security
 
+### Existing-client prices
+
+`/client-pricing` accepts reusable client codes and displays the matching plan and exact total. Codes are not Stripe promotion codes: apply them on CGP before payment. Private code mappings live only in the Sensitive Production `CGP_CLIENT_PLANS` JSON variable, with `id`, `code`, `basePlanId`, `amount` (GBP pence), and, for packs, `paymentUrl` and `paymentLinkId`. Never put real codes or client pricing records in source control or public bundles.
+
+New rates can be previewed now; checkout is gated server-side until 00:00 Europe/London on 1 December 2026. Pack links are withheld until then. Monthly codes require the matching code and plan ID and create a recurring subscription at the validated agreed amount. Pack codes lead to reusable, fixed-quantity Stripe Payment Links, and webhooks verify the exact private plan, amount and link. Codes provide access to an agreed rate, not identity verification.
+
+Keep configured plan entries and provider IDs immutable for delayed webhook handling. For later price changes, add new versioned IDs and migrate deliberately. Existing Wix subscriptions are not changed or cancelled by these codes; agree the changeover before starting a new DD to avoid overlapping payments.
+
 - `public.cgp_enquiries`: consultation requests. No enquiry notification emails are currently sent; review this table or use direct email links.
 - `public.cgp_pack_orders`: paid, pending and failed pack orders, with customer contact details.
 - `public.cgp_payment_events`: deduplicated provider events. GoCardless status updates are an event history, not a computed account balance.

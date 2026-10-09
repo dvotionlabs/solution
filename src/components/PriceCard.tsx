@@ -11,5 +11,6 @@ export default function PriceCard({ plan }: { plan: CoachingPlan }) {
     <p className="price-inclusion">Free first consultation included</p>
     <Link className="button" href={monthly ? `/checkout/${plan.id}` : plan.paymentUrl!}>{monthly ? 'Set up Direct Debit' : 'Buy this pack'}<span aria-hidden="true">↗</span></Link>
     <p className="price-method">{monthly ? 'Monthly payments via GoCardless' : 'One-off payment via Stripe'}</p>
+    {plan.coaching === 'in-person' ? <Link className="price-client-link" href="/client-pricing">Have a client code?</Link> : null}
   </article>;
 }

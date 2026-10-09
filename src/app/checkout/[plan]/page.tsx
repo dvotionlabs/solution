@@ -17,6 +17,7 @@ export default async function Checkout({ params }: { params: Promise<{ plan: str
         <p className="checkout-price">{money(plan.amount)}<span> / month</span></p>
         {plan.perSession ? <p className="checkout-unit-price">{money(plan.perSession)} per session</p> : null}
         <p className="checkout-inclusion"><span aria-hidden="true">✓</span> Free first consultation included</p>
+        {plan.coaching === 'in-person' ? <a className="checkout-client-link" href="/client-pricing">Have a client code?</a> : null}
         {subscriptionCheckoutReady() ? (
           <DirectDebitForm planId={plan.id} amount={money(plan.amount)} />
         ) : (

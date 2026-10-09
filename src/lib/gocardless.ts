@@ -1,5 +1,6 @@
 import { createHmac,timingSafeEqual } from "node:crypto";
-import { getPlan, type CoachingPlan } from './pricing.ts';
+import { type CoachingPlan } from './pricing.ts';
+import { getPaymentPlan } from './client-pricing.ts';
 import { referralName } from './referrals.ts';
 export function subscriptionCheckoutReady(){ return Boolean(gcConfig() && process.env.GOCARDLESS_WEBHOOK_SECRET && process.env.PAYMENT_EVENTS_INGEST_KEY); }
 export function gcConfig(){
@@ -36,7 +37,7 @@ export function billingReferral(billing:BillingRequest,subscriptionId:string) {
  return {referred_by:referredBy,billing_request_id:billing.id,subscription_id:subscriptionId,plan_id:billing.metadata!.plan_id,reward_percent:50,reward_months:1,status:'needs_review'};
 }
 export function subscriptionForBillingRequest(billing:BillingRequest){
- const plan=getPlan(billing.metadata?.plan_id);const mandate=billing.mandate_request?.links?.mandate;
+ const plan=getPaymentPlan(billing.metadata?.plan_id);const mandate=billing.mandate_request?.links?.mandate;
  if(billing.status!=='fulfilled'||billing.metadata?.source!=='cgp-website'||!plan||plan.kind!=='monthly'||billing.metadata.amount!==String(plan.amount)||!mandate||!/^MD[A-Z0-9]+$/.test(mandate))return null;
  return {amount:plan.amount,currency:'GBP',name:`CG Performance | ${plan.coaching} | ${plan.label}`,interval_unit:'monthly',interval:1,links:{mandate},metadata:{source:'cgp-website',plan_id:plan.id,billing_request:billing.id}};
 }
