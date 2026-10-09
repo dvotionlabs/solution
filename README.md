@@ -26,13 +26,13 @@ After the signed fulfilled event creates or finds the agreed subscription, `cgp_
 
 Chris checks the referred person has joined and that the referrer is a current client, then arranges a single discounted month on the referrer’s existing coaching plan through its current billing provider. Keep a record of the applied discount keyed to the referred subscription so retries or duplicate names do not result in multiple awards. Existing Wix clients remain managed through their existing billing setup. No discount is automatically applied or announced to a client by this site.
 
-For manual review, query `cgp_enquiries` for messages starting `Referred by:` and `cgp_payment_events` for non-null `payload->'cgp_referral'`. Consultation referrals can be matched manually if the client does not repeat the name during checkout. The public access and GoCardless launch steps below are still required before live checkout can qualify referrals.
+For manual review, query `cgp_enquiries` for messages starting `Referred by:` and `cgp_payment_events` for non-null `payload->'cgp_referral'`. Consultation referrals can be matched manually if the client does not repeat the name during checkout. Public access and the live GoCardless webhook are configured; referral qualification is recorded after an authorised monthly subscription is created.
 
 ## Configuration
 
 Production sensitive environment variables:
 - `GOCARDLESS_ACCESS_TOKEN` with `GOCARDLESS_ENVIRONMENT=live`.
-- `GOCARDLESS_WEBHOOK_SECRET`: owner must copy from the GoCardless webhook endpoint below. Until configured, new monthly checkout is disabled with a consultation alternative.
+- `GOCARDLESS_WEBHOOK_SECRET`: provisioned as a production Secret for enabled webhook `WE00002BZN2WK3`.
 - `STRIPE_WEBHOOK_SECRET`: provisioned for CGP's new pack-payment endpoint.
 - `PAYMENT_EVENTS_INGEST_KEY`: dedicated write-only database capability, provisioned separately. Only its SHA256 hash is stored in the private database schema. It cannot read tables or execute arbitrary SQL.
 
@@ -40,13 +40,13 @@ Public Supabase variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUB
 
 Never put secrets in Git or chat. Use Sensitive Production environment variables in Vercel. Test using separate sandbox credentials; never copy live credentials to Preview.
 
-### Required launch steps
+### Launch status and verification
 
 1. Vercel Authentication protection was removed on 9 October 2026 with the owner’s explicit approval. The temporary domain is publicly reachable by clients and payment providers.
-2. In GoCardless Developers > Webhooks, create the HTTPS endpoint `https://cgp-dvotion.vercel.app/api/webhooks/gocardless`, copy its signing secret into `GOCARDLESS_WEBHOOK_SECRET` in Vercel Production and redeploy. Enable payment, mandate, subscription and billing-request events if event selection is offered.
-3. Verify delivery of a GoCardless dashboard test webhook, and complete a sandbox mandate/subscription journey before sending live links to clients. No real client mandates or charges were used for automated testing.
+2. GoCardless endpoint `WE00002BZN2WK3` (CGP website payments) was created and enabled in CG Performance Limited on 9 October 2026. It delivers to `https://cgp-dvotion.vercel.app/api/webhooks/gocardless`. The signing secret is stored in Vercel Production and deployed.
+3. Verified public checkout shows Continue to GoCardless; a signed empty webhook returns HTTP 204; an incomplete live checkout opens the CG Performance Limited customer-details form. Real `billing_requests.created` and `billing_requests.flow_created` webhooks were received and saved in Supabase. No customer details, bank mandate or payment were authorised. Full bank authorisation and collection were not exercised; subscription creation/replay logic is covered by automated tests.
 
-Stripe endpoint `we_1UOkNu2MuOMFBF7sbmGGRCmg` is registered at `https://cgp-dvotion.vercel.app/api/webhooks/stripe` for checkout.session.completed, checkout.session.async_payment_succeeded, checkout.session.async_payment_failed. It also needs public reachability. Stripe Payment Links are live, fixed at one pack each; no customer was charged during setup.
+Stripe endpoint `we_1UOkNu2MuOMFBF7sbmGGRCmg` is registered at `https://cgp-dvotion.vercel.app/api/webhooks/stripe` for checkout.session.completed, checkout.session.async_payment_succeeded, checkout.session.async_payment_failed. It is publicly reachable. Stripe Payment Links are live, fixed at one pack each; the in-person 10-pack checkout was verified at GBP 1,150 in CGP account `acct_1RXOue2MuOMFBF7s`. Stripe may offer a converted local currency through Adaptive Pricing. No customer was charged during setup.
 
 ## Billing behaviour
 
@@ -70,6 +70,6 @@ Enquiry input is bounded, consent is required, and a honeypot plus per-email/day
 
 ## Development and verification
 
-`npm ci`, `npm test`, `npm run build`. Checks cover price totals, consent/input validation, forged cookies/signatures, monthly-versus-pack separation, delayed payment state, and cancelled-subscription replay. Database transaction checks cover out-of-order events; anonymous table privileges are verified. Live visual and end-to-end payment testing remain limited by deployment protection and missing GoCardless webhook setup.
+`npm ci`, `npm test`, `npm run build`. Checks cover price totals, consent/input validation, forged cookies/signatures, monthly-versus-pack separation, delayed payment state, and cancelled-subscription replay. Database transaction checks cover out-of-order events; anonymous table privileges are verified. Live browser checks now cover public referral-page format switching, the GoCardless authorisation handoff and Stripe pack checkout. Production webhooks are verified through stored provider events. Tests stop before authorising a real bank mandate or payment.
 
 The temporary domain is noindex. Update canonical metadata when the permanent domain is chosen. Photographs are from the owner's DVOTION website.
