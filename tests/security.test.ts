@@ -1,0 +1,7 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {signBillingSession,verifyBillingSession} from '../src/lib/gocardless.ts';
+import {validateEnquiry,sameOrigin} from '../src/lib/validation.ts';
+test('payment callback rejects forged, malformed and foreign-key cookies',()=>{const s=signBillingSession('BRQ123456','test-only');assert.equal(verifyBillingSession(s,'test-only'),'BRQ123456');assert.equal(verifyBillingSession(s,'different'),null);assert.equal(verifyBillingSession(s.replace('123456','654321'),'test-only'),null);assert.equal(verifyBillingSession('BRQ123456.a','test-only'),null);assert.equal(verifyBillingSession(undefined,'test-only'),null);});
+test('enquiries require consent and valid bounded fields',()=>{const valid={name:'Test Person',email:'TEST@example.com',coaching:'in_person',message:'I would like to discuss strength coaching.',consent:'yes'};assert.equal(validateEnquiry(valid)?.email,'test@example.com');assert.equal(validateEnquiry({...valid,consent:'no'}),null);assert.equal(validateEnquiry({...valid,coaching:'other'}),null);assert.equal(validateEnquiry({...valid,message:'a'.repeat(2001)}),null);assert.equal(validateEnquiry({...valid,email:'invalid'}),null);});
+test('cross-origin submission is rejected',()=>{assert.equal(sameOrigin(new Request('https://cgp.example/api/enquiry',{headers:{origin:'https://attacker.example'}})),false);assert.equal(sameOrigin(new Request('https://cgp.example/api/enquiry',{headers:{origin:'https://cgp.example'}})),true);});
