@@ -1,5 +1,6 @@
 import { createHmac,timingSafeEqual } from "node:crypto";
-import { getPlan } from './pricing.ts';
+import { getPlan, type CoachingPlan } from './pricing.ts';
+import { referralName } from './referrals.ts';
 export function subscriptionCheckoutReady(){ return Boolean(gcConfig() && process.env.GOCARDLESS_WEBHOOK_SECRET && process.env.PAYMENT_EVENTS_INGEST_KEY); }
 export function gcConfig(){
  const token=process.env.GOCARDLESS_ACCESS_TOKEN;
@@ -24,7 +25,16 @@ export function verifyBillingSession(value:string|undefined,secret:string){
  if(!value)return null;const parts=value.split('.');if(parts.length!==2)return null;const [id,sig]=parts;if(!/^BRQ[A-Z0-9]+$/.test(id||'')||!/^([a-f0-9]{64})$/.test(sig||''))return null;
  const expected=createHmac("sha256",secret).update(id).digest();return timingSafeEqual(Buffer.from(sig,"hex"),expected)?id:null;
 }
-export type BillingRequest = {id:string;status:string;metadata?:Record<string,string>;mandate_request?:{links?:{mandate?:string}}};
+export type BillingRequest = {id:string;status:string;metadata?:Record<string,string>;mandate_request?:{links?:{mandate?:string};metadata?:Record<string,string>}};
+export function billingRequestPayload(plan?:CoachingPlan,referredBy='') {
+ const metadata:Record<string,string>=plan?{source:'cgp-website',plan_id:plan.id,amount:String(plan.amount)}:{source:'cgp-website'};
+ return {mandate_request:{currency:'GBP',scheme:'bacs',...(plan&&referredBy?{metadata:{referred_by:referredBy}}:{})},metadata};
+}
+export function billingReferral(billing:BillingRequest,subscriptionId:string) {
+ const referredBy=referralName(billing.mandate_request?.metadata?.referred_by);
+ if(!referredBy||!subscriptionForBillingRequest(billing)||!/^SB[A-Z0-9]+$/.test(subscriptionId))return null;
+ return {referred_by:referredBy,billing_request_id:billing.id,subscription_id:subscriptionId,plan_id:billing.metadata!.plan_id,reward_percent:50,reward_months:1,status:'needs_review'};
+}
 export function subscriptionForBillingRequest(billing:BillingRequest){
  const plan=getPlan(billing.metadata?.plan_id);const mandate=billing.mandate_request?.links?.mandate;
  if(billing.status!=='fulfilled'||billing.metadata?.source!=='cgp-website'||!plan||plan.kind!=='monthly'||billing.metadata.amount!==String(plan.amount)||!mandate||!/^MD[A-Z0-9]+$/.test(mandate))return null;

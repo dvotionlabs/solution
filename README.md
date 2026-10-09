@@ -12,9 +12,21 @@ Coaching website for Chris Gkoufas. Next.js on Vercel, GitHub source, Supabase e
 
 ## Pricing
 
-`src/lib/pricing.ts` is the GBP-pence catalogue. Monthly amounts: in person £460 / £880 / £1,260 for 4 / 8 / 12 sessions; virtual £420 / £800 / £1,140. Online programming £165/month. Packs: in person £1,150 / £2,200; virtual £1,050 / £2,000 for 10 / 20 sessions. Free initial consultation and assessment throughout.
+`src/lib/pricing.ts` is the GBP-pence catalogue. Monthly amounts: in person £460 / £880 / £1,260 for 4 / 8 / 12 sessions; virtual £420 / £800 / £1,140. Online programming £165/month. Packs: in person £1,150 / £2,200; virtual £1,050 / £2,000 for 10 / 20 sessions. The first appointment is free: goals, training experience, lifestyle and limitations.
 
 Routes `/coaching/in-person`, `/coaching/virtual`, `/coaching/online` show prices and checkout buttons. `/checkout/[plan]` discloses the full recurring amount and obtains consent before bank authorisation.
+
+## Referrals and first appointments
+
+`/referrals` is the page clients can share. A current client receives **50% off one month of their current coaching plan** when a new person they refer signs up to a monthly Direct Debit plan. The first appointment is free for everyone. A consultation alone or a pack purchase does not trigger the referral reward.
+
+Enquiries have an optional referring-client name, validated server-side and prefixed to the existing private `cgp_enquiries.message` field. Monthly checkout captures the name in GoCardless `mandate_request.metadata.referred_by`; the three existing Billing Request metadata keys and agreed amount validation are preserved. Leaving the name blank on a resumed setup preserves its original referral. Conflicting referral names on an existing setup require Chris to correct them rather than silently overwriting attribution.
+
+After the signed fulfilled event creates or finds the agreed subscription, `cgp_payment_events.payload.cgp_referral` records the referring name, plan, subscription ID, billing-request ID and the 50% / one-month offer with `status: needs_review`. This is a claim to verify, not an automatically granted reward. No extra database permissions or client billing changes are introduced.
+
+Chris checks the referred person has joined and that the referrer is a current client, then arranges a single discounted month on the referrer’s existing coaching plan through its current billing provider. Keep a record of the applied discount keyed to the referred subscription so retries or duplicate names do not result in multiple awards. Existing Wix clients remain managed through their existing billing setup. No discount is automatically applied or announced to a client by this site.
+
+For manual review, query `cgp_enquiries` for messages starting `Referred by:` and `cgp_payment_events` for non-null `payload->'cgp_referral'`. Consultation referrals can be matched manually if the client does not repeat the name during checkout. The public access and GoCardless launch steps below are still required before live checkout can qualify referrals.
 
 ## Configuration
 

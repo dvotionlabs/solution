@@ -1,4 +1,4 @@
-import { gcConfig, gcRequest, ensureSubscription, type BillingRequest } from '@/lib/gocardless';
+import { gcConfig, gcRequest, ensureSubscription, billingReferral, type BillingRequest } from '@/lib/gocardless';
 import { recordPaymentEvent, validGcSignature } from '@/lib/payment-events';
 export const runtime='nodejs';
 export const maxDuration=60;
@@ -12,14 +12,16 @@ export async function POST(request:Request){
   const body=JSON.parse(raw);if(!Array.isArray(body.events)||body.events.length>100)return new Response('Invalid events',{status:400});
   for(const event of body.events as GcEvent[]){
    if(!event.id||!event.created_at)throw new Error('Invalid event');
+   let referral:ReturnType<typeof billingReferral>=null;
    if(event.resource_type==='billing_requests'&&event.action==='fulfilled'&&event.links?.billing_request){
     const {billing_requests}=await gcRequest(`/billing_requests/${encodeURIComponent(event.links.billing_request)}`) as {billing_requests:BillingRequest};
     if(billing_requests.metadata?.source==='cgp-website'&&billing_requests.metadata?.plan_id){
      const subscription=await ensureSubscription(billing_requests);
      if(!subscription)throw new Error('Subscription needs review');
+     referral=billingReferral(billing_requests,subscription.id);
     }
    }
-   await recordPaymentEvent({provider:'gocardless',id:event.id,type:`${event.resource_type}.${event.action}`,created:event.created_at,payload:event});
+   await recordPaymentEvent({provider:'gocardless',id:event.id,type:`${event.resource_type}.${event.action}`,created:event.created_at,payload:referral?{...event,cgp_referral:referral}:event});
   }
   return new Response(null,{status:204});
  }catch{console.error('GoCardless webhook processing failed');return new Response('Please retry',{status:500});}
