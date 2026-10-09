@@ -42,7 +42,7 @@ Never put secrets in Git or chat. Use Sensitive Production environment variables
 
 ### Required launch steps
 
-1. The inherited Vercel Authentication protection must be removed with explicit owner approval before customers or payment providers can access the temporary domain. Automatic approval review previously rejected that change without explicit approval. It has not been retried.
+1. Vercel Authentication protection was removed on 9 October 2026 with the owner’s explicit approval. The temporary domain is publicly reachable by clients and payment providers.
 2. In GoCardless Developers > Webhooks, create the HTTPS endpoint `https://cgp-dvotion.vercel.app/api/webhooks/gocardless`, copy its signing secret into `GOCARDLESS_WEBHOOK_SECRET` in Vercel Production and redeploy. Enable payment, mandate, subscription and billing-request events if event selection is offered.
 3. Verify delivery of a GoCardless dashboard test webhook, and complete a sandbox mandate/subscription journey before sending live links to clients. No real client mandates or charges were used for automated testing.
 
