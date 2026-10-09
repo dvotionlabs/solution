@@ -73,3 +73,17 @@ body:has(.checkout-page) .site-footer{padding-top:0}
 .client-code-card .payment-consent{margin-top:24px}
 .client-code-card .button{text-decoration:none!important}
 .client-changeover-note{font-size:12px;color:#596451;line-height:1.7;margin:20px 0 0;padding:0 4px}
+
+/* Homepage copy spacing and enquiry controls. */
+.hero-foot{justify-content:flex-end}
+.approach-copy>p,.coach-copy>p:not(.eyebrow):not(.coach-role){margin-bottom:20px}
+.approach-copy>.lead,.coach-copy>.lead{margin-bottom:24px}
+.contact-copy>p:not(.eyebrow):not(.contact-plan-link){margin-bottom:24px}
+.contact-copy .contact-plan-link{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;margin:0 0 16px}
+.contact-plan-link>a{white-space:nowrap}
+.enquiry-permission{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.enquiry-form .consent{min-height:44px;align-items:flex-start;gap:12px;font-size:12px;line-height:1.6;cursor:pointer}
+.enquiry-form .consent input{width:18px;height:18px;margin:1px 0 0}
+.enquiry-privacy{font-size:12px;line-height:1.6;padding:5px 0 5px 30px;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:760px){.contact-copy{margin-bottom:36px}}
+@media(max-width:380px){.hero-foot{display:flex}.hero-foot a{margin-top:0}}
