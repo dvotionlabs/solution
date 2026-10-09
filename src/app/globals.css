@@ -19,3 +19,40 @@
 /* Choose paid coaching or a free consultation at the same entry point. */
 .hero-actions{display:flex;flex-direction:column;align-items:flex-start;gap:18px}.hero-actions .button{width:100%;gap:18px}.purchase-actions{display:flex;align-items:center;flex-wrap:wrap;gap:24px;margin-top:30px}.button-secondary{background:transparent;color:var(--ink)}.button-secondary:hover{background:#e6e9dd}.referral-plans{border-top:1px solid var(--line)}.referral-plans h2{margin-bottom:20px}.plans-intro{font-size:16px;line-height:1.7;max-width:720px;color:#596451}.plan-picker-tabs button{padding:12px 24px;border:1px solid var(--line);font-size:13px;background:transparent;color:var(--ink)}.plan-picker-tabs button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}.plan-picker-tabs{flex-wrap:wrap}.pricing-section-heading h3{font-size:30px;letter-spacing:-1px;font-weight:400;margin:0}.picker-packs{margin-top:45px}.contact-plan-link a{text-decoration:underline;text-underline-offset:3px}
 @media(max-width:760px){.hero-summary{display:block;max-width:100%}.hero-summary p{max-width:340px;margin-bottom:22px}.hero-actions{flex-direction:row;align-items:center;flex-wrap:wrap;gap:20px}.hero-actions .button{width:auto;padding:13px 17px;font-size:12px}.hero-actions .text-link{font-size:12px}.purchase-actions{gap:20px}.purchase-actions .button{width:100%}.plan-picker-tabs button{padding:12px 18px}.pricing-section-heading h3{font-size:26px}}
+
+/* A focused checkout: the plan, the price and one clear next step. */
+.checkout-page{width:min(520px,calc(100% - 40px));margin:0 auto;padding:38px 0 55px}
+.checkout-back{display:inline-block;font-size:13px;color:#596451;padding:8px 0;margin-bottom:16px}
+.checkout-back:hover{text-decoration:underline;text-underline-offset:4px}
+.checkout-card{padding:32px;margin:0;background:#faf9f3}
+.checkout-card .eyebrow{font-size:10px;text-transform:uppercase;color:#596451;margin:0 0 14px}
+.checkout-card h1{font-size:30px;line-height:1.2;letter-spacing:-1px;font-weight:400;margin:0}
+.checkout-card .checkout-price{font-size:52px;line-height:1.15;letter-spacing:-2px;margin:24px 0 6px}
+.checkout-price span{font-size:15px;letter-spacing:0;color:#596451;white-space:nowrap}
+.checkout-card .checkout-unit-price{font-size:13px;line-height:1.5;color:#596451;margin:0}
+.checkout-card .checkout-inclusion{display:flex;align-items:center;gap:9px;font-size:13px;line-height:1.5;margin:20px 0 24px}
+.checkout-inclusion>span{display:grid;place-items:center;background:var(--lime);border-radius:50%;width:21px;height:21px;font-size:12px;flex-shrink:0}
+.checkout-referral{border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:22px}
+.checkout-referral summary,.checkout-existing summary{display:flex;align-items:center;gap:10px;list-style:none;cursor:pointer;font-size:13px;line-height:1.5;padding:14px 0}
+.checkout-referral summary::-webkit-details-marker,.checkout-existing summary::-webkit-details-marker{display:none}
+.checkout-referral summary::after,.checkout-existing summary::after{content:'+';font-size:18px;margin-left:auto;font-weight:400;line-height:1}
+.checkout-referral[open]>summary::after,.checkout-existing[open]>summary::after{content:'−'}
+.checkout-referral summary>span{font-size:11px;color:#65705c}
+.checkout-page summary:focus-visible{outline:3px solid #6a873e;outline-offset:4px}
+.checkout-referral .referral-field{margin:2px 0 18px}
+.checkout-referral .referral-field input{font-size:16px;background:#fff}
+.checkout-card .payment-consent{font-size:13px;line-height:1.55;gap:11px;cursor:pointer}
+.checkout-card .payment-consent input{width:17px;height:17px;margin:2px 0 0;flex-shrink:0}
+.checkout-card .button{font-size:14px;min-height:56px;margin-top:20px}
+.checkout-card .checkout-secure{display:flex;align-items:center;justify-content:center;gap:7px;font-size:11px;line-height:1.5;color:#596451;margin:12px 0 0}
+.checkout-card .checkout-schedule{font-size:12px;line-height:1.6;color:#596451;margin:20px 0 0}
+.checkout-existing{border-bottom:1px solid var(--line);margin-top:14px}
+.checkout-existing summary{color:#596451}
+.checkout-existing p{font-size:13px;line-height:1.7;color:#596451;margin:0 0 16px}
+.checkout-page a:not(.checkout-back){text-decoration:underline;text-underline-offset:3px}
+.checkout-help{font-size:12px;line-height:1.7;color:#596451;text-align:center;margin:18px 0 0}
+.checkout-help>a:last-child{margin-left:12px}
+body:has(.checkout-page) .site-header nav,body:has(.checkout-page) .footer-top{display:none}
+body:has(.checkout-page) .header-inner{height:84px}
+body:has(.checkout-page) .site-footer{padding-top:0}
+@media(max-width:760px){.checkout-page{padding:20px 0 36px}.checkout-card{padding:24px}.checkout-card h1{font-size:27px}.checkout-card .checkout-price{font-size:46px;margin-top:20px}.checkout-card .checkout-inclusion{font-size:12px;margin:18px 0 20px}.checkout-back{margin-bottom:12px}body:has(.checkout-page) .header-inner{height:72px}}

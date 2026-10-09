@@ -8,5 +8,26 @@ export default async function Checkout({ params }: { params: Promise<{ plan: str
   const plan = getPlan(id);
   if (!plan || plan.kind !== 'monthly') notFound();
   const service = coaching.find(c => c.slug === plan.coaching)!;
-  return <section className="simple-page"><a className="back-link" href={`/coaching/${service.slug}`}>← Back to {service.short.toLowerCase()} coaching</a><p className="eyebrow">YOUR COACHING PLAN</p><h1>{service.title}.</h1><div className="payment-panel"><h2>{plan.label}</h2><p className="checkout-total">{money(plan.amount)}<span> / month</span></p>{plan.perSession && <p>{money(plan.perSession)} per session</p>}<p>Your first appointment is free. We’ll discuss your goals, experience, lifestyle and any limitations.</p><p>After you authorise your Direct Debit, your subscription will start automatically. Your first payment is collected on the earliest date available through GoCardless, then monthly until cancelled. GoCardless will confirm the collection dates by email.</p><p>To change or cancel your coaching, <a href="mailto:chrisgkoufas.performance@gmail.com">contact Chris</a>.</p>{subscriptionCheckoutReady() ? <DirectDebitForm planId={plan.id} amount={money(plan.amount)} /> : <p className="payment-note">Direct Debit checkout is being connected. <a href={`/coaching/${service.slug}#consultation`}>Arrange your free appointment</a> and Chris will help you get started.</p>}</div><p className="payment-note">Already paying through Wix or another plan? Contact Chris to agree your changeover before starting a new subscription.</p><p className="payment-note">Your bank details are entered securely on GoCardless. <a href="/privacy">Privacy policy</a>.</p></section>;
+  return (
+    <section className="checkout-page" aria-labelledby="checkout-heading">
+      <a className="checkout-back" href={`/coaching/${service.slug}`}>← Change plan</a>
+      <div className="payment-panel checkout-card">
+        <p className="eyebrow">{service.title}</p>
+        <h1 id="checkout-heading">{plan.label}</h1>
+        <p className="checkout-price">{money(plan.amount)}<span> / month</span></p>
+        {plan.perSession ? <p className="checkout-unit-price">{money(plan.perSession)} per session</p> : null}
+        <p className="checkout-inclusion"><span aria-hidden="true">✓</span> Free first consultation included</p>
+        {subscriptionCheckoutReady() ? (
+          <DirectDebitForm planId={plan.id} amount={money(plan.amount)} />
+        ) : (
+          <p className="payment-note">Online setup is temporarily unavailable. <a href="mailto:chrisgkoufas.performance@gmail.com">Contact Chris to get started</a>.</p>
+        )}
+      </div>
+      <details className="checkout-existing">
+        <summary>Already paying for coaching?</summary>
+        <p>Paying through Wix or another plan? <a href="mailto:chrisgkoufas.performance@gmail.com">Contact Chris</a> before signing up to arrange your changeover and avoid overlapping payments.</p>
+      </details>
+      <p className="checkout-help">To change or cancel, <a href="mailto:chrisgkoufas.performance@gmail.com">contact Chris</a>. <a href="/privacy">Privacy</a></p>
+    </section>
+  );
 }
