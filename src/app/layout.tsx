@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <a className="skip-link" href="#main">Skip to content</a>
     <header className="site-header"><div className="wrap header-inner">
       <Link href="/" className="brand" aria-label="CG Performance home">cgp<span>●</span><small>CG PERFORMANCE</small></Link>
-      <nav aria-label="Main navigation"><Link className="nav-secondary" href="/#approach">The approach</Link><Link className="nav-secondary" href="/#coaching">Coaching</Link><Link className="nav-cta" href="/#contact">Free appointment <span aria-hidden="true">↗</span></Link></nav>
+      <nav aria-label="Main navigation"><Link className="nav-secondary" href="/#approach">The approach</Link><Link className="nav-secondary" href="/#contact">Free consultation</Link><Link className="nav-cta" href="/#coaching">View plans <span aria-hidden="true">↗</span></Link></nav>
     </div></header>
     <main id="main">{children}</main>
     <footer className="site-footer wrap"><div className="footer-top"><Link href="/" className="footer-brand">cgp<span>.</span></Link><p>Coaching with Chris Gkoufas.<br />London · St Albans · Online</p></div>

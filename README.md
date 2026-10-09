@@ -18,7 +18,7 @@ Routes `/coaching/in-person`, `/coaching/virtual`, `/coaching/online` show price
 
 ## Referrals and first appointments
 
-`/referrals` is the page clients can share. A current client receives **50% off one month of their current coaching plan** when a new person they refer signs up to a monthly Direct Debit plan. The first appointment is free for everyone. A consultation alone or a pack purchase does not trigger the referral reward.
+`/referrals` is the page clients can share. It includes a coaching format selector with direct monthly checkout and Stripe pack purchase buttons, alongside the optional free consultation form. Homepage and coaching-page calls to action also offer paid plans without requiring a consultation enquiry first. A current client receives **50% off one month of their current coaching plan** when a new person they refer signs up to a monthly Direct Debit plan. The first appointment is free for everyone. A consultation alone or a pack purchase does not trigger the referral reward.
 
 Enquiries have an optional referring-client name, validated server-side and prefixed to the existing private `cgp_enquiries.message` field. Monthly checkout captures the name in GoCardless `mandate_request.metadata.referred_by`; the three existing Billing Request metadata keys and agreed amount validation are preserved. Leaving the name blank on a resumed setup preserves its original referral. Conflicting referral names on an existing setup require Chris to correct them rather than silently overwriting attribution.
 
