@@ -87,3 +87,8 @@ body:has(.checkout-page) .site-footer{padding-top:0}
 .enquiry-privacy{font-size:12px;line-height:1.6;padding:5px 0 5px 30px;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:760px){.contact-copy{margin-bottom:36px}}
 @media(max-width:380px){.hero-foot{display:flex}.hero-foot a{margin-top:0}}
+
+.nav-portal{white-space:nowrap}.footer-bottom>div{flex-wrap:wrap}
+@media(max-width:1050px){.site-header nav{gap:22px}.brand{padding-right:100px}}
+@media(max-width:760px){.site-header nav{gap:15px}.brand{padding-right:0}.brand small{display:none}.nav-portal{font-size:11px}.nav-cta{padding:10px 12px;gap:10px}}
+@media(max-width:350px){.site-header nav{gap:10px}.nav-cta{font-size:10px}.nav-portal{font-size:10px}}

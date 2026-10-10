@@ -18,11 +18,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <a className="skip-link" href="#main">Skip to content</a>
     <header className="site-header"><div className="wrap header-inner">
       <Link href="/" className="brand" aria-label="CG Performance home">cgp<span>●</span><small>CG PERFORMANCE</small></Link>
-      <nav aria-label="Main navigation"><Link className="nav-secondary" href="/#approach">The approach</Link><Link className="nav-secondary" href="/#contact">Free consultation</Link><Link className="nav-cta" href="/#coaching">View plans <span aria-hidden="true">↗</span></Link></nav>
+      <nav aria-label="Main navigation"><Link className="nav-secondary" href="/#approach">The approach</Link><Link className="nav-secondary" href="/#contact">Free consultation</Link><Link className="nav-portal" href="/portal">Athlete portal</Link><Link className="nav-cta" href="/#coaching">View plans <span aria-hidden="true">↗</span></Link></nav>
     </div></header>
     <main id="main">{children}</main>
     <footer className="site-footer wrap"><div className="footer-top"><Link href="/" className="footer-brand">cgp<span>.</span></Link><p>Coaching with Chris Gkoufas.<br />London · Online</p></div>
-      <div className="footer-bottom"><span>© {new Date().getFullYear()} CG Performance</span><div><Link href="/referrals">Refer a friend</Link><Link href="/direct-debit">Client payments</Link><Link href="/privacy">Privacy</Link><a href="mailto:chrisgkoufas.performance@gmail.com">Get in touch ↗</a></div></div>
+      <div className="footer-bottom"><span>© {new Date().getFullYear()} CG Performance</span><div><Link href="/portal">Athlete portal</Link><Link href="/referrals">Refer a friend</Link><Link href="/direct-debit">Client payments</Link><Link href="/privacy">Privacy</Link><a href="mailto:chrisgkoufas.performance@gmail.com">Get in touch ↗</a></div></div>
     </footer>
   </body></html>;
 }
