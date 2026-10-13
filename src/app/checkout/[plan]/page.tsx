@@ -9,7 +9,7 @@ export default async function Checkout({ params }: { params: Promise<{ plan: str
   const dvotion = getDvotionPlan(id);
   const cgpPlan = getPlan(id);
   const plan = dvotion ?? cgpPlan;
-  if (!plan || plan.kind !== 'monthly') notFound();
+  if (!plan || plan.kind !== 'monthly' || dvotion?.retired) notFound();
   const service = cgpPlan ? coaching.find(c => c.slug === cgpPlan.coaching) : null;
   if (!dvotion && !service) notFound();
   const back = dvotion ? `https://dvotionlabs.com${dvotion.returnPath}` : `/coaching/${service!.slug}`;
@@ -23,7 +23,7 @@ export default async function Checkout({ params }: { params: Promise<{ plan: str
         <h1 id="checkout-heading">{dvotion ? `${title} — ${plan.label}` : plan.label}</h1>
         <p className="checkout-price">{money(plan.amount)}<span> / month</span></p>
         {plan.perSession ? <p className="checkout-unit-price">{money(plan.perSession)} per session</p> : null}
-        {dvotion?.sessionsPerWeek ? <p className="payment-note">Includes {dvotion.sessionsPerWeek} one-to-one session{dvotion.sessionsPerWeek>1?'s':''} per week. Monthly Direct Debit is the weekly session rate × 52 weeks ÷ 12, rounded to the nearest penny. Session times are agreed with your coach.</p> : null}
+        {dvotion?.sessionsPerMonth ? <p className="payment-note">DD{dvotion.sessionsPerMonth} includes exactly {dvotion.sessionsPerMonth} one-to-one sessions per month at {money(dvotion.perSession!)} per session. The monthly Direct Debit is {money(plan.amount)}. Session times and locations are agreed with your coach.</p> : null}
         {dvotion?.requiresAssessment ? <p className="payment-note">Movement Restoration Coaching requires a completed DVOTION Biomechanical Assessment, booked and paid for separately before coaching begins.</p> : null}
         {!dvotion ? <p className="checkout-inclusion"><span aria-hidden="true">✓</span> Free first consultation included</p> : null}
         {!dvotion && cgpPlan?.coaching === 'in-person' ? <a className="checkout-client-link" href="/client-pricing">Have a client code?</a> : null}
