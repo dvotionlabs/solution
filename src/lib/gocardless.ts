@@ -1,5 +1,6 @@
 import { createHmac,timingSafeEqual } from "node:crypto";
 import { type CoachingPlan } from './pricing.ts';
+import { isDvotionPlan, type DvotionPlan } from './dvotion-pricing.ts';
 import { getPaymentPlan } from './client-pricing.ts';
 import { referralName } from './referrals.ts';
 export function subscriptionCheckoutReady(){ return Boolean(gcConfig() && process.env.GOCARDLESS_WEBHOOK_SECRET && process.env.PAYMENT_EVENTS_INGEST_KEY); }
@@ -27,9 +28,12 @@ export function verifyBillingSession(value:string|undefined,secret:string){
  const expected=createHmac("sha256",secret).update(id).digest();return timingSafeEqual(Buffer.from(sig,"hex"),expected)?id:null;
 }
 export type BillingRequest = {id:string;status:string;metadata?:Record<string,string>;mandate_request?:{links?:{mandate?:string};metadata?:Record<string,string>}};
-export function billingRequestPayload(plan?:CoachingPlan,referredBy='') {
- const metadata:Record<string,string>=plan?{source:'cgp-website',plan_id:plan.id,amount:String(plan.amount)}:{source:'cgp-website'};
- return {mandate_request:{currency:'GBP',scheme:'bacs',...(plan&&referredBy?{metadata:{referred_by:referredBy}}:{})},metadata};
+export function billingRequestPayload(plan?:CoachingPlan | DvotionPlan,referredBy='') {
+ const dvotion=isDvotionPlan(plan);
+ const metadata:Record<string,string>=plan?
+  {source:dvotion?'dvotion-website':'cgp-website',plan_id:plan.id,amount:String(plan.amount),...(dvotion?{dvotion_service:plan.dvotionSlug}:{})}:
+  {source:'cgp-website'};
+ return {mandate_request:{currency:'GBP',scheme:'bacs',...(plan&&referredBy&&!dvotion?{metadata:{referred_by:referredBy}}:{})},metadata};
 }
 export function billingReferral(billing:BillingRequest,subscriptionId:string) {
  const referredBy=referralName(billing.mandate_request?.metadata?.referred_by);
@@ -38,8 +42,12 @@ export function billingReferral(billing:BillingRequest,subscriptionId:string) {
 }
 export function subscriptionForBillingRequest(billing:BillingRequest){
  const plan=getPaymentPlan(billing.metadata?.plan_id);const mandate=billing.mandate_request?.links?.mandate;
- if(billing.status!=='fulfilled'||billing.metadata?.source!=='cgp-website'||!plan||plan.kind!=='monthly'||billing.metadata.amount!==String(plan.amount)||!mandate||!/^MD[A-Z0-9]+$/.test(mandate))return null;
- return {amount:plan.amount,currency:'GBP',name:`CG Performance | ${plan.coaching} | ${plan.label}`,interval_unit:'monthly',interval:1,links:{mandate},metadata:{source:'cgp-website',plan_id:plan.id,billing_request:billing.id}};
+ const dvotion=isDvotionPlan(plan);
+ const source=dvotion?'dvotion-website':'cgp-website';
+ if(billing.status!=='fulfilled'||!plan||plan.kind!=='monthly'||billing.metadata?.source!==source||billing.metadata?.amount!==String(plan.amount)||!mandate||!/^MD[A-Z0-9]+$/.test(mandate))return null;
+ if(dvotion&&billing.metadata?.dvotion_service!==plan.dvotionSlug)return null;
+ const name=dvotion?`CG Performance | DVOTION | ${plan.serviceName} | ${plan.label}`:`CG Performance | ${plan.coaching} | ${plan.label}`;
+ return {amount:plan.amount,currency:'GBP',name,interval_unit:'monthly',interval:1,links:{mandate},metadata:{source,plan_id:plan.id,billing_request:billing.id,...(dvotion?{dvotion_service:plan.dvotionSlug}:{})}};
 }
 export async function ensureSubscription(billing:BillingRequest){
  const subscriptions=subscriptionForBillingRequest(billing);if(!subscriptions)return null;

@@ -1,4 +1,5 @@
 import { getPlan, type CoachingPlan } from './pricing.ts';
+import { getDvotionPlan, type DvotionPlan } from './dvotion-pricing.ts';
 
 // Server-only configuration. Never import this module into a client component.
 // Keep existing entries immutable: provider webhooks may arrive after a price update.
@@ -36,8 +37,8 @@ export function resolveClientCode(code: unknown) {
 }
 
 // Provider callbacks use the trusted, server-created plan ID, never a supplied amount.
-export function getPaymentPlan(id: unknown): CoachingPlan | undefined {
-  return getPlan(id) ?? (typeof id === 'string' ? clientPlans().find(p => p.id === id) : undefined);
+export function getPaymentPlan(id: unknown): CoachingPlan | DvotionPlan | undefined {
+  return getDvotionPlan(id) ?? getPlan(id) ?? (typeof id === 'string' ? clientPlans().find(p => p.id === id) : undefined);
 }
 
 export function clientPricingActive(now = Date.now()) {

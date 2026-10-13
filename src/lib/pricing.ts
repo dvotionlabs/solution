@@ -21,4 +21,4 @@ export const plans: readonly CoachingPlan[] = [
   { id: 'online-monthly', coaching: 'online', kind: 'monthly', sessions: null, amount: 16500, perSession: null, label: 'Individual online coaching' },
 ];
 export const getPlan = (id: unknown) => typeof id === 'string' ? plans.find(p => p.id === id) : undefined;
-export const money = (pence: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(pence / 100);
+export const money = (pence: number) => new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(pence / 100);

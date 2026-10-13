@@ -2,6 +2,7 @@ import {NextRequest,NextResponse} from "next/server";
 import {gcConfig,gcRequest,signBillingSession,verifyBillingSession,subscriptionCheckoutReady,billingRequestPayload,type BillingRequest} from "@/lib/gocardless";
 import {referralName} from '@/lib/referrals';
 import {getPlan} from '@/lib/pricing';
+import {getDvotionPlan} from '@/lib/dvotion-pricing';
 import {authorizedClientPlan,resolveClientCode,clientPricingActive} from '@/lib/client-pricing';
 import {sameOrigin} from "@/lib/validation";
 import {rateLimited} from "@/lib/rate-limit";
@@ -15,7 +16,7 @@ export async function POST(request:NextRequest){
   const hasClientCode=body.clientCode!==undefined;
   if(hasClientCode&&!resolveClientCode(body.clientCode))return NextResponse.json({error:'Please apply a valid client code.'},{status:400});
   if(hasClientCode&&!clientPricingActive())return NextResponse.json({error:'Your new client rate is available from 1 December 2026.'},{status:409});
-  const plan=hasClientCode?authorizedClientPlan(body.planId,body.clientCode):getPlan(body.planId);
+  const plan=hasClientCode?authorizedClientPlan(body.planId,body.clientCode):(getDvotionPlan(body.planId)??getPlan(body.planId));
   if(hasClientCode&&!plan)return NextResponse.json({error:'This code is for a different coaching plan. Please apply it on the client rates page.'},{status:400});
   const referredBy=referralName(body.referredBy);
   if(referredBy===null)return NextResponse.json({error:'Please enter the referring client’s name using no more than 100 characters.'},{status:400});

@@ -15,7 +15,7 @@ export async function POST(request:Request){
    let referral:ReturnType<typeof billingReferral>=null;
    if(event.resource_type==='billing_requests'&&event.action==='fulfilled'&&event.links?.billing_request){
     const {billing_requests}=await gcRequest(`/billing_requests/${encodeURIComponent(event.links.billing_request)}`) as {billing_requests:BillingRequest};
-    if(billing_requests.metadata?.source==='cgp-website'&&billing_requests.metadata?.plan_id){
+    if(['cgp-website','dvotion-website'].includes(billing_requests.metadata?.source||'')&&billing_requests.metadata?.plan_id){
      const subscription=await ensureSubscription(billing_requests);
      if(!subscription)throw new Error('Subscription needs review');
      referral=billingReferral(billing_requests,subscription.id);
