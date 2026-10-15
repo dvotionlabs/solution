@@ -19,7 +19,7 @@ export default async function Checkout({ params }: { params: Promise<{ plan: str
       <a className="checkout-back" href={back}>← Change plan</a>
       <div className="payment-panel checkout-card">
         <p className="eyebrow">{dvotion ? 'DVOTION LABS / COACHING PAYMENTS' : title}</p>
-        {dvotion ? <p className="payment-note">Coaching delivered by DVOTION Labs. Direct Debit collected by CG Performance through GoCardless.</p> : null}
+        {dvotion ? <p className="payment-note">Coaching delivered by DVOTION Labs. Secure Direct Debit payments through GoCardless.</p> : null}
         <h1 id="checkout-heading">{dvotion ? `${title} — ${plan.label}` : plan.label}</h1>
         <p className="checkout-price">{money(plan.amount)}<span> / month</span></p>
         {plan.perSession ? <p className="checkout-unit-price">{money(plan.perSession)} per session</p> : null}
@@ -37,7 +37,7 @@ export default async function Checkout({ params }: { params: Promise<{ plan: str
         <summary>Already paying for coaching?</summary>
         <p>If you have an existing Stripe or GoCardless coaching subscription, contact Chris before starting a new mandate to avoid overlapping payments. This signup does not cancel existing subscriptions.</p>
       </details>
-      <p className="checkout-help">Monthly collections start after your GoCardless mandate is authorised. Cancellation of DVOTION coaching requires 30 days' written notice. <a href={dvotion?'https://dvotionlabs.com/cancellation-policy':'/privacy'}>{dvotion?'DVOTION cancellation policy':'Privacy'}</a> · <a href="/privacy">Payment privacy</a> · <a href="mailto:chrisgkoufas.performance@gmail.com">Contact Chris</a>.</p>
+      <p className="checkout-help">Monthly collections start after your GoCardless mandate is authorised. Cancellation of DVOTION coaching requires 30 days&apos; written notice. <a href={dvotion?'https://dvotionlabs.com/cancellation-policy':'/privacy'}>{dvotion?'DVOTION cancellation policy':'Privacy'}</a> · <a href="/privacy">Payment privacy</a> · <a href="mailto:chrisgkoufas.performance@gmail.com">Contact Chris</a>.</p>
     </section>
   );
 }
