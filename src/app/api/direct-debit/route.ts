@@ -17,7 +17,7 @@ export async function POST(request:NextRequest){
   if(hasClientCode&&!resolveClientCode(body.clientCode))return NextResponse.json({error:'Please apply a valid client code.'},{status:400});
   if(hasClientCode&&!clientPricingActive())return NextResponse.json({error:'Your new client rate is available from 1 December 2026.'},{status:409});
   const dvotion=getDvotionPlan(body.planId);
-  if(dvotion?.retired)return NextResponse.json({error:'This coaching plan has been replaced by DD4, DD8 or DD12. Please choose a current plan from DVOTION.'},{status:409});
+  if(dvotion?.retired)return NextResponse.json({error:'This coaching plan is no longer available. Please choose a current plan from DVOTION.'},{status:409});
   const plan=hasClientCode?authorizedClientPlan(body.planId,body.clientCode):(dvotion??getPlan(body.planId));
   if(hasClientCode&&!plan)return NextResponse.json({error:'This code is for a different coaching plan. Please apply it on the client rates page.'},{status:400});
   const referredBy=referralName(body.referredBy);
