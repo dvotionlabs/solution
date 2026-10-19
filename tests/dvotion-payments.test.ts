@@ -14,6 +14,16 @@ const expected=[
  ['dvotion-movement-dd12-v2',12,126000,10500]
 ] as const;
 
+test('the training app is retired while historical payment agreements remain readable',()=>{
+ const plan=getDvotionPlan('dvotion-training-app')!;
+ assert.equal(plan.retired,true);
+ assert.equal(plan.amount,5000);
+ assert(!dvotionPlans.filter(p=>!p.retired).some(p=>p.id===plan.id));
+ const payload=billingRequestPayload(plan);
+ const billing={id:'BRQOLD123',status:'fulfilled',metadata:payload.metadata,mandate_request:{links:{mandate:'MD123'}}};
+ assert.equal(subscriptionForBillingRequest(billing)?.amount,5000);
+});
+
 test('DD4, DD8 and DD12 are exact MONTHLY sessions, not 52-week annual averages',()=>{
  const active=dvotionPlans.filter(p=>p.sessionsPerMonth&&!p.retired);
  assert.deepEqual(active.map(p=>[p.id,p.sessionsPerMonth,p.amount,p.perSession]),expected);
