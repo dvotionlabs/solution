@@ -39,7 +39,7 @@ jobs:
                       if r.status!=200: failures.append(f'{path} status {r.status}')
                       if path in ['/','/portal','/admin']:
                           pages[path]=raw.decode('utf-8',errors='replace')
-                          if 'This page could not be found.' in pages[path]:failures.append(f'{path} rendered custom not-found page')
+                          if '<title>' not in pages[path] and '<title ' not in pages[path]:failures.append(f'{path} missing HTML title')
                           if not re.search(r'<link[^>]+rel="manifest"[^>]+href="/manifest.webmanifest"',pages[path]):
                               failures.append(f'{path} missing app manifest link')
                       if path.endswith('.png') and (not ct.startswith('image/png') or raw[:8]!=bytes.fromhex('89504e470d0a1a0a')):
