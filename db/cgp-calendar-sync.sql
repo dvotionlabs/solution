@@ -153,7 +153,7 @@ declare
  target uuid; current_link cgp_private.calendar_event_links; old_booking public.cgp_bookings;
  pack uuid; item_date date; seen text[]:=array[]::text[];
  created_count int:=0;updated_count int:=0;cancelled_count int:=0;skipped_count int:=0;
- link_record record;
+ link_record record;changed_rows integer;
 begin
  if not cgp_private.calendar_authorized(p_key) then raise exception 'Invalid calendar sync credential'; end if;
  if p_events is null or jsonb_typeof(p_events)<>'array' or jsonb_array_length(p_events)>2500 then raise exception 'Invalid calendar events batch'; end if;
@@ -186,7 +186,8 @@ begin
   if target is null or (current_link.booking_id is not null and current_link.client_id<>target) then
    if current_link.booking_id is not null then
     update public.cgp_bookings set status='cancelled' where id=current_link.booking_id and status='scheduled';
-    get diagnostics cancelled_count = row_count; -- adjusted below if needed
+    get diagnostics changed_rows = row_count;
+    cancelled_count:=cancelled_count+changed_rows;
     delete from cgp_private.calendar_event_links where account_email=calendar.account_email and event_id=eid;
    end if;
    if target is null then skipped_count:=skipped_count+1;continue;end if;
@@ -203,11 +204,18 @@ begin
    if current_link.booking_id is not null then
     select * into old_booking from public.cgp_bookings where id=current_link.booking_id;
     if old_booking.id is not null and old_booking.status='scheduled' then
-     update public.cgp_bookings set starts_at=start_at,ends_at=end_at,
-      credit_id=coalesce(pack,old_booking.credit_id),title='Coaching session',
-      location='London',notes=''
-      where id=current_link.booking_id;
-     updated_count:=updated_count+1;
+     -- Preserve the assigned pack if it still covers the rescheduled local day.
+     if old_booking.credit_id is not null and exists(
+      select 1 from public.cgp_session_credits c where c.id=old_booking.credit_id
+       and c.starts_on<=item_date and (c.expires_on is null or c.expires_on>=item_date)
+     ) then pack:=old_booking.credit_id;end if;
+     if old_booking.starts_at is distinct from start_at or old_booking.ends_at is distinct from end_at
+        or old_booking.credit_id is distinct from pack then
+      update public.cgp_bookings set starts_at=start_at,ends_at=end_at,
+       credit_id=pack,title='Coaching session',location='London',notes=''
+       where id=current_link.booking_id;
+      updated_count:=updated_count+1;
+     end if;
     end if;
     update cgp_private.calendar_event_links set touched_at=now()
      where account_email=calendar.account_email and event_id=eid;
@@ -223,6 +231,9 @@ begin
       values(target,pack,'Coaching session',start_at,end_at,'London','','scheduled')
       returning * into old_booking;
      created_count:=created_count+1;
+    elsif old_booking.credit_id is null and pack is not null then
+     update public.cgp_bookings set credit_id=pack where id=old_booking.id;
+     updated_count:=updated_count+1;
     end if;
     insert into cgp_private.calendar_event_links(account_email,event_id,booking_id,client_id)
      values(calendar.account_email,eid,old_booking.id,target);
@@ -239,8 +250,9 @@ begin
     and not(l.event_id=any(seen))
  loop
   update public.cgp_bookings set status='cancelled' where id=link_record.booking_id and status='scheduled';
+  get diagnostics changed_rows = row_count;
   delete from cgp_private.calendar_event_links where account_email=calendar.account_email and event_id=link_record.event_id;
-  cancelled_count:=cancelled_count+1;
+  cancelled_count:=cancelled_count+changed_rows;
  end loop;
  update cgp_private.calendar_connection set last_sync_at=now(),last_error=null,updated_at=now() where singleton=1;
  return jsonb_build_object('created',created_count,'updated',updated_count,'cancelled',cancelled_count,
