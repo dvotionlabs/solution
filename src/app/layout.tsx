@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import PWARegister from "@/components/portal/PWARegister";
 import "@fontsource/ibm-plex-sans/400.css";
 import "@fontsource/ibm-plex-sans/500.css";
 import "@fontsource/ibm-plex-sans/600.css";
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="en-GB"><body>
+  return <html lang="en-GB"><body><PWARegister/>
     <a className="skip-link" href="#main">Skip to content</a>
     <header className="site-header"><div className="wrap header-inner">
       <Link href="/" className="brand" aria-label="CG Performance home">cgp<span>●</span><small>CG PERFORMANCE</small></Link>
