@@ -1,0 +1,68 @@
+name: Catalogue BURST Physical Therapy videos
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/burst-exercises-catalog.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install YouTube metadata reader
+        run: python -m pip install --disable-pip-version-check --quiet -U yt-dlp
+      - name: Collect public videos, Shorts and live uploads
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, pathlib, re, subprocess, sys
+          base = 'https://www.youtube.com/@burstphysicaltherapy'
+          records = {}
+          successful_tabs = []
+          for tab in ('videos', 'shorts', 'streams'):
+              url = f'{base}/{tab}'
+              p = subprocess.run(['yt-dlp','--skip-download','--flat-playlist','--no-warnings','--ignore-errors','--dump-single-json',url],capture_output=True,text=True,timeout=360)
+              if p.returncode != 0:
+                  print(f'Could not catalogue {tab}: {p.stderr[-1500:]}',file=sys.stderr)
+                  continue
+              try:
+                  payload=json.loads(p.stdout)
+              except json.JSONDecodeError:
+                  print(f'Non-JSON channel response for {tab}: {p.stdout[-400:]}',file=sys.stderr)
+                  continue
+              entries = payload.get('entries') or []
+              successful_tabs.append(tab)
+              for e in entries:
+                  if not isinstance(e,dict):
+                      continue
+                  video_id=e.get('id') or ''
+                  title=(e.get('title') or '').strip()
+                  if not re.fullmatch(r'[A-Za-z0-9_-]{11}',video_id) or not title or title in ('[Private video]','[Deleted video]'):
+                      continue
+                  records.setdefault(video_id,dict(id=video_id,title=title,tab=tab))
+              print(f'{tab}: {len(entries)} entries',flush=True)
+          if not records:
+              raise SystemExit('No public videos verified. Refusing to overwrite catalogue.')
+          target=pathlib.Path('data/burst-physical-therapy-videos.json')
+          target.parent.mkdir(parents=True,exist_ok=True)
+          catalogue={'channel':'https://www.youtube.com/@burstphysicaltherapy','source':'BURST Physical Therapy','successful_tabs':successful_tabs,'count':len(records),'videos':sorted(records.values(),key=lambda x:x['title'].casefold())}
+          target.write_text(json.dumps(catalogue,indent=2,ensure_ascii=False)+'\n')
+          print('Validated',len(records),'unique videos; wrote',target)
+          PY
+      - name: Commit updated metadata
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/burst-physical-therapy-videos.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Capture public BURST Physical Therapy YouTube exercise catalogue'
+            git push
+          fi
