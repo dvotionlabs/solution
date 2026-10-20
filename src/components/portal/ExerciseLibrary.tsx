@@ -32,8 +32,8 @@ export default function ExerciseLibrary({exercises,onEdit}:{exercises:Exercise[]
   {filtered.length?
    <div className="p-library-grid">{filtered.slice(0,shown).map(exercise=>
     <article className="p-library-tile" key={exercise.id}>
-     <button type="button" className="p-library-tile-open" onClick={()=>setSelected(exercise)} aria-label={`Watch ${exercise.title}`}>
-      <span className="p-library-play-icon" aria-hidden="true">▶</span>
+     <button type="button" className="p-library-tile-open" onClick={()=>setSelected(exercise)} aria-label={exercise.youtube_id?`Watch ${exercise.title}`:`View ${exercise.title} details`}>
+      <span className="p-library-play-icon" aria-hidden="true">{exercise.youtube_id?'▶':'≡'}</span>
       <span className="p-library-name">{exercise.title}</span>
      </button>
      {onEdit&&<button type="button" className="p-library-edit" onClick={()=>onEdit(exercise)} aria-label={`Edit ${exercise.title}`} title="Edit exercise">✎</button>}
@@ -45,13 +45,13 @@ export default function ExerciseLibrary({exercises,onEdit}:{exercises:Exercise[]
    <button className="p-button p-secondary" onClick={()=>setShown(n=>n+PAGE_SIZE)}>Show {Math.min(PAGE_SIZE,filtered.length-shown)} more exercises ↓</button>
   </div>}
   {selected&&<Modal title={selected.title} onClose={()=>setSelected(null)}>
-   <div className="p-library-player">
+   {selected.youtube_id?<div className="p-library-player">
     <iframe src={`https://www.youtube-nocookie.com/embed/${selected.youtube_id}?autoplay=1&rel=0`} title={`Demonstration: ${selected.title}`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin"/>
-   </div>
+   </div>:<p className="p-library-written-note">Written exercise · No video attached. Follow the coaching cues and any instructions assigned by your coach.</p>}
    <p className="p-library-detail-category">{selected.category}</p>
    {selected.cues&&<p className="p-multiline p-library-detail-cues">{selected.cues}</p>}
    <div className="p-library-detail-actions">
-    <a className="p-link" href={`https://www.youtube.com/watch?v=${selected.youtube_id}`} target="_blank" rel="noopener noreferrer">Open in YouTube ↗</a>
+    {selected.youtube_id&&<a className="p-link" href={`https://www.youtube.com/watch?v=${selected.youtube_id}`} target="_blank" rel="noopener noreferrer">Open in YouTube ↗</a>}
     {onEdit&&<button className="p-button p-secondary" onClick={()=>{const exercise=selected;setSelected(null);onEdit(exercise);}}>Edit exercise ↗</button>}
    </div>
   </Modal>}
