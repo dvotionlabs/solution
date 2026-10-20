@@ -86,3 +86,13 @@ body:has(.portal-app) > .site-header,body:has(.portal-app) > .site-footer{displa
  .p-homework-search-result{align-items:flex-start;flex-direction:column;gap:3px}
  .p-homework-search-result small{text-align:left;max-width:none}
 }
+
+/* Switch between library exercises and creating a text-only assignment in place. */
+.p-homework-mode{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:#e8eadf;border-radius:8px}
+.p-homework-mode button{border:0;border-radius:5px;padding:10px 9px;min-height:44px;background:transparent;color:var(--p-muted);font-size:12px;line-height:1.35}
+.p-homework-mode button[aria-pressed=true]{background:var(--p-paper);color:var(--p-ink);box-shadow:0 1px 4px #1c291012;font-weight:600}
+.p-homework-written-form{display:grid;gap:14px}
+.p-homework-written-form>.p-muted{margin:0}
+.p-homework-written-form label{display:grid;gap:7px;font-size:12px;font-weight:500}
+.p-homework-written-form input,.p-homework-written-form textarea{width:100%}
+@media(max-width:420px){.p-homework-mode button{font-size:11px;padding:9px 6px}}
