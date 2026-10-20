@@ -1,4 +1,5 @@
-import {randomBytes,timingSafeEqual} from 'node:crypto';
+import {randomBytes} from 'node:crypto';
+export {equalState} from './calendar-match';
 import {decryptTokens,encryptTokens,type DirectTokens} from './direct-wearables';
 
 export const GOOGLE_CALLBACK='https://cgp-dvotion.vercel.app/api/admin/calendar/callback';
@@ -16,7 +17,6 @@ function creds(){
 }
 export function googleReady(){return Boolean(process.env.CGP_GOOGLE_CLIENT_ID&&process.env.CGP_GOOGLE_CLIENT_SECRET&&process.env.CGP_DIRECT_TOKEN_KEY&&process.env.CRON_SECRET);}
 export function randomState(){return randomBytes(32).toString('base64url');}
-export function equalState(a:string|null,b:string|null){if(!a||!b)return false;const x=Buffer.from(a),y=Buffer.from(b);return x.length===y.length&&timingSafeEqual(x,y);}
 export function googleAuthoriseUrl(state:string){
  const {client_id}=creds();
  const u=new URL('https://accounts.google.com/o/oauth2/v2/auth');
@@ -93,10 +93,4 @@ export async function googleEvents(token:string,windowStart:Date,windowEnd:Date)
   page=json.nextPageToken;
  }
  throw new Error('Google Calendar returned more than five pages. Sync stopped to avoid cancelling events from an incomplete result.');
-}
-export function normalizedTitle(title:string){return title.trim().normalize('NFKC').toLocaleLowerCase('en-GB');}
-/** Strict exact-title matching avoids accidentally mapping a meeting about a client. */
-export function matchingClient(title:string,aliases:{alias:string;client_id:string}[]):string|null{
- const found=aliases.filter(a=>normalizedTitle(a.alias)===normalizedTitle(title));
- return found.length===1?found[0].client_id:null;
 }
