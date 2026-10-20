@@ -1,11 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "@fontsource/ibm-plex-sans/400.css";
 import "@fontsource/ibm-plex-sans/500.css";
 import "@fontsource/ibm-plex-sans/600.css";
 import "./globals.css";
 
+export const viewport: Viewport = { themeColor: "#20271f" };
+
 export const metadata: Metadata = {
+  appleWebApp: { capable: true, title: "CGP", statusBarStyle: "default" },
   metadataBase: new URL(process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000"),
   title: { default: "CG Performance | Coaching with Chris Gkoufas", template: "%s | CG Performance" },
   description: "Individual strength, movement and performance coaching with Chris Gkoufas. In person in London, and online.",
