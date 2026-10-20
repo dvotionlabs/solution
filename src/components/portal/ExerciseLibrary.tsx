@@ -33,15 +33,10 @@ export default function ExerciseLibrary({exercises,onEdit}:{exercises:Exercise[]
    <div className="p-library-grid">{filtered.slice(0,shown).map(exercise=>
     <article className="p-library-tile" key={exercise.id}>
      <button type="button" className="p-library-tile-open" onClick={()=>setSelected(exercise)} aria-label={`Watch ${exercise.title}`}>
-      <span className="p-library-thumb" style={{backgroundImage:`url(https://i.ytimg.com/vi/${exercise.youtube_id}/mqdefault.jpg)`}}>
-       <span className="p-library-play" aria-hidden="true">▶</span>
-      </span>
-      <span className="p-library-meta">
-       <strong title={exercise.title}>{exercise.title}</strong>
-       <small>{exercise.category}</small>
-      </span>
+      <span className="p-library-play-icon" aria-hidden="true">▶</span>
+      <span className="p-library-name">{exercise.title}</span>
      </button>
-     {onEdit&&<button type="button" className="p-library-edit" onClick={()=>onEdit(exercise)} aria-label={`Edit ${exercise.title}`}>Edit</button>}
+     {onEdit&&<button type="button" className="p-library-edit" onClick={()=>onEdit(exercise)} aria-label={`Edit ${exercise.title}`} title="Edit exercise">✎</button>}
     </article>
    )}</div>:
    <Empty title={exercises.length?'No matching exercises':'The exercise library is on its way'}>{exercises.length?'Try another exercise name or category.':'Exercise demonstrations will appear here when your coach adds them.'}</Empty>
