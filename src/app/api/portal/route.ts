@@ -52,6 +52,21 @@ export async function POST(request:Request){
    const row={title:textValue(b.title,2,120),category:textValue(b.category,1,60),youtube_id:video,cues:textValue(b.cues||'',0,4000),active:b.active!==false};
    const r=b.id?await db.from('cgp_exercises').update(row).eq('id',idValue(b.id)):await db.from('cgp_exercises').insert(row);if(r.error)throw new Error('Exercise could not be saved.');return reply({ok:true});
   }
+  if(b.action==='homework-custom'){
+   // One transaction creates an optional-video exercise and its athlete assignment.
+   // The RPC enforces active athletes, admin-only access and existing RLS policies.
+   const args={
+    p_client:idValue(b.client_id),
+    p_title:textValue(b.new_title,2,120),
+    p_category:textValue(b.new_category,1,60),
+    p_cues:textValue(b.new_cues||'',0,4000),
+    p_prescription:textValue(b.prescription,1,500),
+    p_coach_note:textValue(b.coach_note||'',0,2000)
+   };
+   const r=await db.rpc('cgp_create_text_homework',args);
+   if(r.error)throw new Error(r.error.message||'Written homework could not be assigned.');
+   return reply({ok:true,id:r.data,message:'Written exercise created and assigned. No video required.'});
+  }
   if(b.action==='homework'){
    const row={client_id:idValue(b.client_id),exercise_id:idValue(b.exercise_id),prescription:textValue(b.prescription,1,500),coach_note:textValue(b.coach_note||'',0,2000),active:true};
    const r=await db.from('cgp_homework').insert(row);if(r.error)throw new Error('Homework could not be assigned.');return reply({ok:true});
