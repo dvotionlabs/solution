@@ -1,6 +1,6 @@
 import {fail,jsonBody,member,PortalError,reply} from '@/lib/portal/server';
 import {ready} from '@/lib/portal/direct-wearables';
-import {dateValue,idValue,londonDay,providers,textValue,timestamp,youtubeChannel,youtubeId} from '@/lib/portal/model';
+import {dateValue,idValue,londonDay,providers,textValue,timestamp,youtubeChannel,optionalYoutubeId} from '@/lib/portal/model';
 import {sameOrigin} from '@/lib/validation';
 import {rateLimited} from '@/lib/rate-limit';
 export async function GET(){try{
@@ -48,7 +48,7 @@ export async function POST(request:Request){
   }
   if(b.action==='booking-status'){if(!['scheduled','completed','cancelled','no_show'].includes(String(b.status)))throw new Error('Choose a valid status.');const r=await db.from('cgp_bookings').update({status:b.status}).eq('id',idValue(b.id));if(r.error)throw new Error(r.error.code==='P0001'?r.error.message:'Booking could not be updated.');return reply({ok:true});}
   if(b.action==='exercise'){
-   const video=youtubeId(b.video);if(!video)throw new Error('Paste a valid YouTube video link.');
+   const video=optionalYoutubeId(b.video);
    const row={title:textValue(b.title,2,120),category:textValue(b.category,1,60),youtube_id:video,cues:textValue(b.cues||'',0,4000),active:b.active!==false};
    const r=b.id?await db.from('cgp_exercises').update(row).eq('id',idValue(b.id)):await db.from('cgp_exercises').insert(row);if(r.error)throw new Error('Exercise could not be saved.');return reply({ok:true});
   }
