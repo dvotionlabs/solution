@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {matchingClient,normalizedTitle,equalState} from '../src/lib/portal/google-calendar.ts';
+import {matchingClient,normalizedTitle,equalState} from '../src/lib/portal/calendar-match.ts';
 
 const mappings=[
  {alias:'Akash',client_id:'aakash-id'},
