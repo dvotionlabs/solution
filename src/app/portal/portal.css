@@ -49,3 +49,20 @@ body:has(.portal-app) > .site-header,body:has(.portal-app) > .site-footer{displa
 .p-pwa-install-help strong{color:var(--p-ink)}
 .p-workspace .p-pwa-setup{margin-top:28px}
 @media(max-width:760px){.p-login-intro .p-pwa-setup{margin-top:18px}.p-pwa-install{font-size:12px}.p-workspace .p-pwa-setup{margin-top:24px}}
+
+/* Calendar mappings belong in the private coach workspace, not athlete views. */
+.p-calendar-settings{display:block}
+.p-calendar-connection{padding:15px 0 8px}
+.p-calendar-connection>p{margin:7px 0 14px}
+.p-calendar-connection code{font-size:12px;word-break:break-all}
+.p-calendar-actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin:17px 0}
+.p-calendar-settings .p-section-head{margin:24px 0 12px}
+.p-calendar-aliases{border-top:1px solid var(--p-line)}
+.p-calendar-alias{display:flex;justify-content:space-between;align-items:center;gap:13px;border-bottom:1px solid var(--p-line);padding:8px 0}
+.p-calendar-alias strong{font-size:13px;font-weight:500}
+.p-calendar-alias small{color:var(--p-muted);font-size:12px}
+.p-calendar-settings .p-calendar-map-form{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.2fr) auto;gap:10px;align-items:end;max-width:100%;margin:18px 0}
+.p-calendar-map-form>.p-button{min-height:46px;white-space:normal}
+.p-calendar-settings .p-info,.p-calendar-settings .p-error{margin-top:15px}
+@media(max-width:930px){.p-calendar-settings .p-calendar-map-form{grid-template-columns:repeat(2,minmax(0,1fr))}.p-calendar-map-form>.p-button{grid-column:1/-1;justify-self:start}}
+@media(max-width:550px){.p-calendar-settings .p-calendar-map-form{grid-template-columns:1fr}.p-calendar-map-form>.p-button{grid-column:auto}.p-calendar-alias{flex-wrap:wrap}}
