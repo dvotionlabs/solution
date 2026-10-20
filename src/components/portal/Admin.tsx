@@ -2,7 +2,8 @@
 import {useState,type ReactNode} from 'react';
 import {type PortalData,type Booking,type Exercise,londonDay,londonInput,londonToIso,sessionBalance} from '@/lib/portal/model';
 import type {Action} from './Portal';
-import {Balance,BookingList,Empty,ExerciseCard,HomeworkGrid,Metrics,Modal,dateTime} from './Shared';
+import {Balance,BookingList,Empty,ExerciseCard,Metrics,Modal,dateTime} from './Shared';
+import HomeworkGrid from './CompactHomework';
 import ExerciseLibrary from './ExerciseLibrary';
 import HomeworkExercisePicker from './HomeworkExercisePicker';
 import GoogleCalendarSettings from './GoogleCalendarSettings';
