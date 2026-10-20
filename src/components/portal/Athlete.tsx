@@ -2,7 +2,8 @@
 import {useEffect,useState} from 'react';
 import type {PortalData} from '@/lib/portal/model';
 import type {Action} from './Portal';
-import {Balance,BookingList,HomeworkGrid,Metrics,dateTime} from './Shared';
+import {Balance,BookingList,Metrics,dateTime} from './Shared';
+import HomeworkGrid from './CompactHomework';
 import ExerciseLibrary from './ExerciseLibrary';
 export default function Athlete({data,tab,action,navigate,onError}:{data:PortalData;tab:string;action:Action;navigate:(tab:string)=>void;onError:(error:string)=>void}){
  const [autoChecked,setAutoChecked]=useState(false),[library,setLibrary]=useState(false),[period,setPeriod]=useState('upcoming'),[consent,setConsent]=useState(false),[busy,setBusy]=useState(''),[source,setSource]=useState('');
