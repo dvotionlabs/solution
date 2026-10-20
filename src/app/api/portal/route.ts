@@ -1,4 +1,5 @@
-import {fail,jsonBody,member,PortalError,reply,wearablesReady} from '@/lib/portal/server';
+import {fail,jsonBody,member,PortalError,reply} from '@/lib/portal/server';
+import {ready} from '@/lib/portal/direct-wearables';
 import {dateValue,idValue,londonDay,providers,textValue,timestamp,youtubeChannel,youtubeId} from '@/lib/portal/model';
 import {sameOrigin} from '@/lib/validation';
 import {rateLimited} from '@/lib/rate-limit';
@@ -16,7 +17,7 @@ export async function GET(){try{
  ]);
  if(results.some(r=>r.error))throw new PortalError('Your portal could not be loaded. Please try again.',503);
  const [clients,credits,bookings,exercises,homework,logs,connections,metrics,settings]=results.map(r=>r.data||[]);
- return reply({asOf:new Date().toISOString(),profile,clients:isAdmin?clients:[],credits,bookings,exercises,homework,logs,connections,metrics,youtubeChannel:settings.find(s=>s.key==='youtube_channel')?.value||'',wearablesReady:wearablesReady(),providers});
+ return reply({asOf:new Date().toISOString(),profile,clients:isAdmin?clients:[],credits,bookings,exercises,homework,logs,connections,metrics,youtubeChannel:settings.find(s=>s.key==='youtube_channel')?.value||'',wearablesReady:ready('WHOOP')||ready('OURA'),providerReady:{WHOOP:ready('WHOOP'),OURA:ready('OURA'),GARMIN:false},providers:['WHOOP','OURA','GARMIN']});
  }catch(error){return fail(error);}}
 export async function POST(request:Request){
  if(!sameOrigin(request))return reply({error:'Please use the CGP website.'},403);
