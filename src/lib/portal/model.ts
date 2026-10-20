@@ -1,7 +1,7 @@
 export type Profile={id:string;user_id:string|null;email:string;name:string;role:'athlete'|'admin';active:boolean;created_at:string};
 export type Credit={id:string;client_id:string;label:string;quantity:number;starts_on:string;expires_on:string|null;source_reference:string|null};
 export type Booking={id:string;client_id:string;credit_id:string|null;title:string;starts_at:string;ends_at:string;location:string;status:'scheduled'|'completed'|'cancelled'|'no_show';notes:string};
-export type Exercise={id:string;title:string;category:string;youtube_id:string;cues:string;active:boolean};
+export type Exercise={id:string;title:string;category:string;youtube_id:string|null;cues:string;active:boolean};
 export type Homework={id:string;client_id:string;exercise_id:string;prescription:string;coach_note:string;active:boolean};
 export type HomeworkLog={id:string;homework_id:string;client_id:string;done_on:string};
 export type Connection={id:string;client_id:string;provider:string;status:'pending'|'connected'|'revoked'|'error';synced_at:string|null;consent_at:string};
@@ -28,6 +28,27 @@ export function youtubeId(value:unknown){
  }catch{return null;}
 }
 export function youtubeChannel(value:unknown){if(typeof value!=='string')return null;if(value.trim()==='')return '';try{const u=new URL(value);return u.protocol==='https:'&&['youtube.com','www.youtube.com'].includes(u.hostname)&&/^\/(?:@[^/?#]+|channel\/[\w-]+|c\/[^/?#]+|user\/[^/?#]+)\/?$/.test(u.pathname)?u.origin+u.pathname:null;}catch{return null;}}
+/**
+ * Search title and category by all typed words, independent of their order.
+ * The full dropdown in the UI remains available without searching.
+ */
+export function searchExerciseChoices(exercises:Exercise[],query:string):Exercise[]{
+ const terms=query.normalize('NFKC').trim().toLocaleLowerCase('en-GB').split(/\s+/).filter(Boolean);
+ if(!terms.length)return exercises;
+ return exercises.filter(e=>{
+  const searchText=`${e.title} ${e.category}`.normalize('NFKC').toLocaleLowerCase('en-GB');
+  return terms.every(term=>searchText.includes(term));
+ });
+}
+/** A blank video is valid for a written-only exercise; bad nonblank links are not. */
+export function optionalYoutubeId(value:unknown):string|null{
+ if(value===undefined||value===null)return null;
+ if(typeof value!=='string')throw new Error('Paste a valid YouTube video link, or leave it blank.');
+ if(!value.trim())return null;
+ const id=youtubeId(value);
+ if(!id)throw new Error('Paste a valid YouTube video link, or leave it blank.');
+ return id;
+}
 export function uuid(value:unknown):value is string{return typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);}
 export function textValue(value:unknown,min=0,max=2000){if(typeof value!=='string'||value.trim().length<min||value.trim().length>max)throw new Error('Please check the length of the fields.');return value.trim();}
 export function dateValue(value:unknown){const s=textValue(value,10,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(s)||Number.isNaN(Date.parse(s))||new Date(s).toISOString().slice(0,10)!==s)throw new Error('Choose a valid date.');return s;}
