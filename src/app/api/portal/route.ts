@@ -1,6 +1,6 @@
 import {fail,jsonBody,member,PortalError,reply} from '@/lib/portal/server';
 import {ready} from '@/lib/portal/direct-wearables';
-import {dateValue,idValue,londonDay,providers,textValue,timestamp,youtubeChannel,optionalYoutubeId} from '@/lib/portal/model';
+import {dateValue,idValue,uuid,londonDay,providers,textValue,timestamp,youtubeChannel,optionalYoutubeId} from '@/lib/portal/model';
 import {sameOrigin} from '@/lib/validation';
 import {rateLimited} from '@/lib/rate-limit';
 export async function GET(){try{
@@ -12,7 +12,7 @@ export async function GET(){try{
  const results=await Promise.all([
   allRows((a,b)=>db.from('cgp_profiles').select('*').order('name').order('id').range(a,b)),allRows((a,b)=>db.from('cgp_session_credits').select('*').order('id').range(a,b)),
   allRows((a,b)=>db.from('cgp_bookings').select('*').order('starts_at',{ascending:false}).order('id').range(a,b)),allRows((a,b)=>db.from('cgp_exercises').select('*').order('title').order('id').range(a,b)),
-  allRows((a,b)=>db.from('cgp_homework').select('*').order('created_at',{ascending:false}).order('id').range(a,b)),allRows((a,b)=>db.from('cgp_homework_logs').select('*').gte('done_on',new Date(Date.now()-30*86400000).toISOString().slice(0,10)).order('id').range(a,b)),
+  allRows((a,b)=>db.from('cgp_homework').select('*').order('client_id').order('sort_order').order('created_at',{ascending:false}).order('id').range(a,b)),allRows((a,b)=>db.from('cgp_homework_logs').select('*').gte('done_on',new Date(Date.now()-30*86400000).toISOString().slice(0,10)).order('id').range(a,b)),
   allRows((a,b)=>db.from('cgp_wearable_connections').select('id,client_id,provider,status,synced_at,consent_at').order('id').range(a,b)),allRows((a,b)=>db.from('cgp_wearable_metrics').select('*').gte('day',new Date(Date.now()-30*86400000).toISOString().slice(0,10)).order('day',{ascending:false}).order('connection_id').order('kind').order('source_id').range(a,b)),db.from('cgp_portal_settings').select('*')
  ]);
  if(results.some(r=>r.error))throw new PortalError('Your portal could not be loaded. Please try again.',503);
@@ -70,6 +70,13 @@ export async function POST(request:Request){
   if(b.action==='homework'){
    const row={client_id:idValue(b.client_id),exercise_id:idValue(b.exercise_id),prescription:textValue(b.prescription,1,500),coach_note:textValue(b.coach_note||'',0,2000),active:true};
    const r=await db.from('cgp_homework').insert(row);if(r.error)throw new Error('Homework could not be assigned.');return reply({ok:true});
+  }
+  if(b.action==='homework-reorder'){
+   const client=idValue(b.client_id);
+   if(!Array.isArray(b.order)||b.order.length>1000||b.order.some(id=>!uuid(id)))throw new Error('Please refresh before changing the exercise order.');
+   const r=await db.rpc('cgp_homework_reorder',{p_client:client,p_order:b.order});
+   if(r.error)throw new Error(r.error.message||'Could not save this client\'s exercise order.');
+   return reply({ok:true,message:'Exercise order saved.',count:r.data});
   }
   if(b.action==='archive-homework'){const r=await db.from('cgp_homework').update({active:false}).eq('id',idValue(b.id));if(r.error)throw new Error('Homework could not be updated.');return reply({ok:true});}
   if(b.action==='channel'){const url=youtubeChannel(b.url);if(url===null)throw new Error('Use a YouTube channel link, such as youtube.com/@yourchannel.');const r=await db.from('cgp_portal_settings').update({value:url}).eq('key','youtube_channel');if(r.error)throw new Error('Channel could not be saved.');return reply({ok:true});}
