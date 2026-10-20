@@ -2,7 +2,15 @@ export type Profile={id:string;user_id:string|null;email:string;name:string;role
 export type Credit={id:string;client_id:string;label:string;quantity:number;starts_on:string;expires_on:string|null;source_reference:string|null};
 export type Booking={id:string;client_id:string;credit_id:string|null;title:string;starts_at:string;ends_at:string;location:string;status:'scheduled'|'completed'|'cancelled'|'no_show';notes:string};
 export type Exercise={id:string;title:string;category:string;youtube_id:string|null;cues:string;active:boolean};
-export type Homework={id:string;client_id:string;exercise_id:string;prescription:string;coach_note:string;active:boolean};
+export type Homework={id:string;client_id:string;exercise_id:string;prescription:string;coach_note:string;active:boolean;sort_order:number;created_at:string};
+/** Sort only local homework data, never another athlete's assignments. */
+export function orderHomework<T extends Pick<Homework,'id'|'sort_order'|'created_at'>>(items:T[]):T[]{
+ return [...items].sort((a,b)=>{
+  const rankA=Number.isInteger(a.sort_order)&&a.sort_order>=0?a.sort_order:Number.MAX_SAFE_INTEGER;
+  const rankB=Number.isInteger(b.sort_order)&&b.sort_order>=0?b.sort_order:Number.MAX_SAFE_INTEGER;
+  return rankA-rankB||b.created_at.localeCompare(a.created_at)||b.id.localeCompare(a.id);
+ });
+}
 export type HomeworkLog={id:string;homework_id:string;client_id:string;done_on:string};
 export type Connection={id:string;client_id:string;provider:string;status:'pending'|'connected'|'revoked'|'error';synced_at:string|null;consent_at:string};
 export type Metric={connection_id:string;day:string;kind:'daily'|'sleep';source_id:string;steps:number|null;sleep_seconds:number|null;hrv_rmssd:number|null;hrv_sdnn:number|null;resting_hr:number|null;measured_at:string;received_at:string};
