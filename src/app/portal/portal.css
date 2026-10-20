@@ -147,3 +147,15 @@ body:has(.portal-app) > .site-header,body:has(.portal-app) > .site-footer{displa
  .p-hw-remove{width:24px;min-height:29px}
 }
 @media(max-width:330px){.p-hw-grid{grid-template-columns:1fr}}
+
+/* Reorder controls appear only to the coach; athlete cards stay compact. */
+.p-hw-sort-help{font-size:11px;line-height:1.45;color:var(--p-muted);margin:0 0 11px!important}
+.p-hw-sort-error{font-size:12px!important;margin:7px 0!important}
+.p-hw-order-controls{display:inline-flex;align-items:center;justify-content:flex-end;gap:2px;flex:0 0 auto}
+.p-hw-order-button,.p-hw-drag-handle{display:inline-grid;place-items:center;padding:0;border:1px solid transparent;border-radius:5px;background:transparent;color:#5b7150;width:26px;height:28px;line-height:1;font-size:15px;font-weight:500}
+.p-hw-order-button:hover:not(:disabled),.p-hw-order-button:focus-visible,.p-hw-drag-handle:hover:not(:disabled),.p-hw-drag-handle:focus-visible{background:#e7efdc;border-color:#c5d6b8}
+.p-hw-order-button:disabled{opacity:.25;cursor:default}
+.p-hw-drag-handle{cursor:grab;font-size:18px;letter-spacing:-4px;padding-right:4px;color:#778a70}
+.p-hw-drag-handle:active:not(:disabled){cursor:grabbing}
+.p-hw-tile.is-dragging{border-style:dashed;border-color:#7e985f;opacity:.5}
+@media(max-width:760px){.p-hw-order-controls{gap:0}.p-hw-order-button{width:25px;height:26px;font-size:14px}.p-hw-drag-handle{display:none}.p-hw-sort-help{font-size:10px!important;line-height:1.4;margin-bottom:9px!important}.p-hw-top{gap:3px}}
