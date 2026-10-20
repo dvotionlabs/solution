@@ -1,11 +1,13 @@
 name: Verify CGP app installation
 on:
   push:
-    branches: [main]
+    branches: [main, fix/cgp-install-from-browser]
     paths:
       - .github/workflows/cgp-pwa-smoke.yml
       - src/app/manifest.ts
       - src/app/pwa/**
+      - src/app/layout.tsx
+      - src/components/portal/PWARegister.tsx
       - src/app/portal/**
       - public/sw.js
   workflow_dispatch:
@@ -20,32 +22,51 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
-          import json,urllib.request,urllib.error
+          import json,re,html,urllib.request,urllib.error
+          from urllib.parse import urljoin
           base='https://cgp-dvotion.vercel.app'
-          endpoints=['/','/portal','/admin','/manifest.webmanifest','/sw.js','/pwa/offline.html','/pwa/icon-192.png','/pwa/icon-512.png','/pwa/icon-maskable.png','/apple-icon.png']
+          endpoints=['/','/portal','/admin','/manifest.webmanifest','/sw.js','/pwa/offline.html','/pwa/icon-192.png','/pwa/icon-512.png','/pwa/icon-maskable.png']
           failures=[]
+          pages={}
           for path in endpoints:
               url=base+path
               try:
                   req=urllib.request.Request(url,headers={'User-Agent':'CGP-PWA-HealthCheck/1.0','Cache-Control':'no-cache'})
                   with urllib.request.urlopen(req,timeout=12) as r:
-                      raw=r.read(4096)
+                      raw=r.read(200000)
                       ct=r.headers.get('Content-Type','')
                       print(f'{path}: {r.status} {ct}; final={r.url}',flush=True)
-                      if r.status!=200:failures.append(f'{path} status {r.status}')
-                      if path in ['/','/portal','/admin'] and b'This page could not be found' in raw:failures.append(f'{path} returned custom not-found HTML')
-                      if path.endswith('.png') and not ct.startswith('image/png'):failures.append(f'{path} not PNG')
+                      if r.status!=200: failures.append(f'{path} status {r.status}')
+                      if path in ['/','/portal','/admin']:
+                          pages[path]=raw.decode('utf-8',errors='replace')
+                          if 'This page could not be found.' in pages[path]:failures.append(f'{path} rendered custom not-found page')
+                          if not re.search(r'<link[^>]+rel="manifest"[^>]+href="/manifest.webmanifest"',pages[path]):
+                              failures.append(f'{path} missing app manifest link')
+                      if path.endswith('.png') and (not ct.startswith('image/png') or raw[:8]!=bytes.fromhex('89504e470d0a1a0a')):
+                          failures.append(f'{path} not valid PNG')
                       if path.endswith('.webmanifest'):
-                          try:
-                              m=json.loads(raw.decode('utf-8'))
-                              print('Manifest:',json.dumps({k:m.get(k) for k in ('id','name','start_url','scope','display','icons')}))
-                          except Exception as e:failures.append(f'manifest invalid: {e}')
+                          m=json.loads(raw.decode('utf-8'))
+                          print('Manifest:',json.dumps({k:m.get(k) for k in ('id','name','start_url','scope','display','icons')}))
+                          if m.get('display')!='standalone' or m.get('start_url')!='/portal':failures.append('Manifest installation settings incorrect')
               except urllib.error.HTTPError as e:
-                  print(f'{path}: HTTP {e.code}; {e.read(300)!r}',flush=True)
+                  print(f'{path}: HTTP {e.code}; {e.read(200)!r}',flush=True)
                   failures.append(f'{path} returned {e.code}')
               except Exception as e:
                   print(f'{path}: error {e}',flush=True)
                   failures.append(f'{path} failed: {e}')
+          # Next.js metadata uses a generated Apple icon URL. Never assume it is /apple-icon.png.
+          head=pages.get('/','')
+          links=re.findall(r'<link[^>]+>',head)
+          for link in links:
+              if 'apple-touch-icon' not in link:continue
+              match=re.search(r'href="([^"]+)"',link)
+              if not match:continue
+              path=html.unescape(match.group(1))
+              print('Apple icon link:',path)
+              try:
+                  with urllib.request.urlopen(urljoin(base,path),timeout=12) as r:
+                      if r.status!=200 or not r.headers.get('Content-Type','').startswith('image/png'):failures.append('Apple icon link unavailable')
+              except Exception as e:failures.append(f'Apple icon URL failed: {e}')
           if failures: raise SystemExit('FAILED: '+'; '.join(failures))
-          print('All PWA endpoints respond with expected types.')
+          print('All CGP PWA endpoints respond with expected types.')
           PY
