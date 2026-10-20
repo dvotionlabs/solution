@@ -96,3 +96,54 @@ body:has(.portal-app) > .site-header,body:has(.portal-app) > .site-footer{displa
 .p-homework-written-form label{display:grid;gap:7px;font-size:12px;font-weight:500}
 .p-homework-written-form input,.p-homework-written-form textarea{width:100%}
 @media(max-width:420px){.p-homework-mode button{font-size:11px;padding:9px 6px}}
+
+/* Compact homework overview: details/video only load on demand in a dialog. */
+.p-hw-compact{min-width:0}
+.p-hw-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:0 1px;color:var(--p-muted);font-size:12px;line-height:1.4}
+.p-hw-summary strong{font-size:13px;font-weight:600;color:var(--p-ink)}
+.p-hw-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:stretch}
+.p-hw-tile{display:flex;flex-direction:column;min-width:0;border:1px solid var(--p-line);border-radius:9px;background:var(--p-paper);padding:12px 13px 10px;transition:border-color .15s ease}
+.p-hw-tile:hover,.p-hw-tile:focus-within{border-color:#b4c3a7}
+.p-hw-top{display:flex;align-items:center;gap:7px;min-height:16px;line-height:1}
+.p-hw-index{font-size:10px;font-variant-numeric:tabular-nums;color:#8b9681;font-weight:600;letter-spacing:.7px}
+.p-hw-category{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--p-muted);letter-spacing:.25px}
+.p-hw-video-label{flex-shrink:0;font-size:10px;color:#637f4d}
+.portal-app .p-hw-name{font-size:15px;line-height:1.3;letter-spacing:-.2px;font-weight:600;min-height:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;margin:7px 0 3px}
+.portal-app .p-hw-dose{font-size:12px;color:#626d5b;line-height:1.4;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;margin:0 0 9px}
+.p-hw-actions{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-top:auto;padding-top:8px;border-top:1px solid var(--p-line);min-height:38px}
+.p-hw-actions-right{display:flex;align-items:center;justify-content:flex-end;gap:5px;min-width:0}
+.p-hw-done{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:28px;border:1px solid #c8d3bd;border-radius:5px;background:#f6f8f1;color:#526744;font-size:11px;font-weight:500;line-height:1.2;padding:5px 7px;white-space:nowrap}
+.p-hw-done:hover:not(:disabled){background:#edf4e3}
+.p-hw-done.is-done{background:#e1edcf;border-color:#b4c79e;color:#36532d}
+.p-hw-status{font-size:10px;color:var(--p-muted);line-height:1.3;white-space:nowrap}
+.p-hw-status.is-done{color:#3d6731}
+.p-hw-open{display:inline-flex;align-items:center;gap:4px;justify-content:center;min-height:28px;padding:4px 5px;border:0;background:transparent;color:#30472b;font-size:11px;font-weight:600;white-space:nowrap}
+.p-hw-open:hover:not(:disabled){text-decoration:underline;text-underline-offset:3px}
+.p-hw-remove{display:grid;place-items:center;flex-shrink:0;width:27px;height:28px;padding:0;border:0;border-radius:5px;background:transparent;color:#81897e;font-size:19px;line-height:1}
+.p-hw-remove:hover:not(:disabled){background:#f4e9e5;color:#944c40}
+.p-hw-dialog{min-width:0}
+.p-hw-dialog-video{width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:8px;background:#202920;margin-bottom:15px}
+.p-hw-dialog-video iframe{width:100%;height:100%;border:0;display:block}
+.portal-app .p-hw-dialog-category{margin:8px 0 14px;color:var(--p-muted);font-size:11px;letter-spacing:.7px;text-transform:uppercase;font-weight:600}
+.p-hw-dialog-block{border-top:1px solid var(--p-line);padding:14px 0}
+.portal-app .p-hw-dialog-block h3{font-size:12px;letter-spacing:.3px;font-weight:600;color:#546849;margin-bottom:7px}
+.portal-app .p-hw-dialog-block p{font-size:14px;line-height:1.6;color:var(--p-ink);overflow-wrap:anywhere}
+.portal-app .p-hw-dialog-block .p-hw-dialog-prescription{font-weight:600}
+.p-hw-dialog-footer{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:9px;flex-wrap:wrap}
+.p-hw-dialog-footer .p-hw-done{min-height:40px;padding:10px 14px;font-size:12px}
+@media(max-width:1120px){.p-hw-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){
+ .p-hw-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .p-hw-tile{padding:10px 9px 8px;border-radius:8px}
+ .portal-app .p-hw-name{font-size:13px;line-height:1.3;margin:6px 0 4px}
+ .portal-app .p-hw-dose{font-size:11px;line-height:1.35;margin-bottom:8px}
+ .p-hw-summary{font-size:11px;margin-bottom:10px}
+ .p-hw-top{gap:5px}
+ .p-hw-category{font-size:9px}
+ .p-hw-actions{padding-top:7px;gap:2px}
+ .p-hw-done,.p-hw-open{font-size:10px;padding:5px 4px;min-height:29px}
+ .p-hw-status{font-size:9px}
+ .p-hw-actions-right{gap:0}
+ .p-hw-remove{width:24px;min-height:29px}
+}
+@media(max-width:330px){.p-hw-grid{grid-template-columns:1fr}}
