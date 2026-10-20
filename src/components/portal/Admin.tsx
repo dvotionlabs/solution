@@ -8,12 +8,12 @@ import HomeworkExercisePicker from './HomeworkExercisePicker';
 import GoogleCalendarSettings from './GoogleCalendarSettings';
 type Dialog={type:'client'|'credit'|'booking'|'exercise'|'homework'|'invite';booking?:Booking;exercise?:Exercise;url?:string};
 export default function Admin({data,tab,action,navigate,onError}:{data:PortalData;tab:string;action:Action;navigate:(t:string)=>void;onError:(s:string)=>void}){
- const [search,setSearch]=useState(''),[clientId,setClientId]=useState(''),[dialog,setDialog]=useState<Dialog|null>(null),[formClient,setFormClient]=useState(''),[busy,setBusy]=useState(false),[formError,setFormError]=useState(''),[period,setPeriod]=useState('upcoming');
+ const [search,setSearch]=useState(''),[clientId,setClientId]=useState(''),[dialog,setDialog]=useState<Dialog|null>(null),[formClient,setFormClient]=useState(''),[busy,setBusy]=useState(false),[formError,setFormError]=useState(''),[period,setPeriod]=useState('upcoming'),[homeworkMode,setHomeworkMode]=useState<'library'|'written'>('library');
  const clients=data.clients.filter(c=>c.role==='athlete'),client=clients.find(c=>c.id===clientId),names=Object.fromEntries(data.clients.map(c=>[c.id,c.name]));
  const filtered=clients.filter(c=>`${c.name} ${c.email}`.toLowerCase().includes(search.toLowerCase()));
  const now=Date.parse(data.asOf),upcoming=data.bookings.filter(b=>b.status==='scheduled'&&Date.parse(b.ends_at)>=now).sort((a,b)=>a.starts_at.localeCompare(b.starts_at));
  const credits=data.credits.filter(c=>c.client_id===clientId),bookings=data.bookings.filter(b=>b.client_id===clientId);
- function open(d:Dialog){setDialog(d);setFormClient(d.booking?.client_id||clientId||clients.find(c=>c.active)?.id||'');setFormError('');}
+ function open(d:Dialog){setHomeworkMode('library');setDialog(d);setFormClient(d.booking?.client_id||clientId||clients.find(c=>c.active)?.id||'');setFormError('');}
  async function run(body:Record<string,unknown>){try{return await action(body);}catch(e){onError(e instanceof Error?e.message:'Please try again.');return null;}}
  async function invite(id:string){setBusy(true);const r=await run({action:'invite',client_id:id});if(r?.url)open({type:'invite',url:String(r.url)});setBusy(false);}
  function viewClient(id:string){setClientId(id);navigate('clients');}
@@ -21,6 +21,7 @@ export default function Admin({data,tab,action,navigate,onError}:{data:PortalDat
   const values=Object.fromEntries(new FormData(e.currentTarget));const body:Record<string,unknown>={...values,action:dialog.type};
   if(dialog.type==='booking'){body.starts_at=londonToIso(String(values.starts_at));body.ends_at=londonToIso(String(values.ends_at));if(dialog.booking)body.id=dialog.booking.id;}
   if(dialog.type==='exercise'&&dialog.exercise)body.id=dialog.exercise.id;
+   if(dialog.type==='homework'&&homeworkMode==='written')body.action='homework-custom';
   const result=await action(body);if(dialog.type==='client'&&result.id)setClientId(String(result.id));setDialog(null);
  }catch(e){setFormError(e instanceof Error?e.message:'Could not save.');}finally{setBusy(false);}}
  const selectClient=<label>Client<select name="client_id" required value={formClient} onChange={e=>setFormClient(e.target.value)}><option value="" disabled>Select a client</option>{clients.filter(c=>c.active).map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>;
@@ -30,7 +31,23 @@ export default function Admin({data,tab,action,navigate,onError}:{data:PortalDat
   {dialog.type==='credit'&&<>{selectClient}{field('Pack or plan name','label',{placeholder:'e.g. October · 8 sessions'})}<div className="p-form-pair">{field('Number of sessions','quantity',{type:'number',min:1,max:500,value:4})}{field('Available from','starts_on',{type:'date',value:londonDay()})}</div>{field('Expiry date (optional)','expires_on',{type:'date',required:false})}{field('Payment reference (optional)','source_reference',{required:false,placeholder:'Helps prevent adding the same purchase twice'})}<p className="p-muted p-small">For an opening balance, enter the sessions still owed and only add bookings that have not already been deducted. Recurring plans need a new allocation each month.</p></>}
   {dialog.type==='booking'&&<>{selectClient}<label>Session pack<select name="credit_id" defaultValue={dialog.booking?.credit_id||''}><option value="">No charge / consultation</option>{data.credits.filter(c=>c.client_id===formClient).map(c=><option value={c.id} key={c.id}>{c.label} · {Math.max(0,c.quantity-data.bookings.filter(b=>b.credit_id===c.id&&b.status!=='cancelled').length)} unbooked</option>)}</select></label>{field('Session title','title',{value:dialog.booking?.title||'Coaching session'})}<div className="p-form-pair">{field('Starts · London time','starts_at',{type:'datetime-local',value:dialog.booking?londonInput(dialog.booking.starts_at):undefined})}{field('Ends · London time','ends_at',{type:'datetime-local',value:dialog.booking?londonInput(dialog.booking.ends_at):undefined})}</div>{field('Location or meeting details','location',{value:dialog.booking?.location||'London'})}<label>Note for the client<textarea name="notes" rows={3} maxLength={2000} defaultValue={dialog.booking?.notes||''}/></label><p className="p-muted p-small">A booked session reserves a credit. Completed and chargeable missed sessions use it; cancelling releases it.</p></>}
   {dialog.type==='exercise'&&<>{field('Exercise name','title',{value:dialog.exercise?.title})}{field('Category','category',{value:dialog.exercise?.category||'Movement'})}{field('YouTube video link (optional)','video',{type:'url',required:false,value:dialog.exercise?.youtube_id?`https://www.youtube.com/watch?v=${dialog.exercise.youtube_id}`:'',placeholder:'https://www.youtube.com/watch?v=…'})}<label>Coaching cues<textarea name="cues" rows={4} maxLength={4000} defaultValue={dialog.exercise?.cues||''}/></label><p className="p-muted p-small">Leave the video blank for a written-only exercise. Coaching cues and individual instructions will still appear for athletes. You can add a YouTube link later.</p></>}
-  {dialog.type==='homework'&&<>{selectClient}<HomeworkExercisePicker exercises={data.exercises}/>{field('Prescription','prescription',{placeholder:'e.g. 3 sets of 6, three days per week'})}<label>Individual instruction<textarea name="coach_note" rows={3} maxLength={2000}/></label></>}
+  {dialog.type==='homework'&&<>{selectClient}
+   <div className="p-homework-mode" role="group" aria-label="Homework exercise source">
+    <button type="button" aria-pressed={homeworkMode==='library'} onClick={()=>setHomeworkMode('library')}>Choose from library</button>
+    <button type="button" aria-pressed={homeworkMode==='written'} onClick={()=>setHomeworkMode('written')}>Write new exercise · No video</button>
+   </div>
+   {homeworkMode==='library'?<HomeworkExercisePicker exercises={data.exercises}/>:
+    <div className="p-homework-written-form">
+     <p className="p-muted p-small">Create and assign a new exercise using only its name, written instructions and sets/reps. You do not need a video.</p>
+     {field('Exercise name','new_title',{placeholder:'e.g. Single-leg calf raise'})}
+     {field('Category','new_category',{value:'Movement'})}
+     <label>Exercise technique / coaching cues (optional)
+      <textarea name="new_cues" rows={3} maxLength={4000} placeholder="e.g. Keep the knee straight, move through a full range."/>
+     </label>
+    </div>}
+   {field('Prescription / sets and reps','prescription',{placeholder:'e.g. 3 sets of 10, three times per week'})}
+   <label>Individual instruction for this athlete (optional)<textarea name="coach_note" rows={3} maxLength={2000}/></label>
+   </>}
   {formError&&<p className="p-error" role="alert">{formError}</p>}<button className="p-button" disabled={busy}>{busy?'Saving…':'Save'} ↗</button></form>}</Modal>;
  const heading=(title:string,description:string,buttons?:ReactNode)=><header className="p-page-heading"><p className="p-kicker">CG PERFORMANCE / COACH WORKSPACE</p><div className="p-heading-row"><div><h1>{title}</h1><p>{description}</p></div>{buttons&&<div className="p-heading-actions">{buttons}</div>}</div></header>;
  const clientTable=<section className="p-panel p-client-list">{filtered.length?filtered.map(c=>{const balance=sessionBalance(data.credits.filter(p=>p.client_id===c.id),data.bookings.filter(b=>b.client_id===c.id));return <button className="p-client-row" key={c.id} onClick={()=>viewClient(c.id)}><span className="p-avatar">{c.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</span><span className="p-client-name"><strong>{c.name}</strong><small>{c.email}</small></span><span className="p-client-credit"><strong>{balance.remaining}</strong><small>sessions left</small></span><span className={`p-badge ${c.active?'completed':''}`}>{c.active?c.user_id?'Active':'Not activated':'Paused'}</span><span aria-hidden="true">↗</span></button>;}):<Empty title="Add your first client">Create their profile, enter their current session balance, then share a private access link.</Empty>}</section>;
