@@ -1,13 +1,13 @@
 import {cookies} from 'next/headers';
 import {member} from '@/lib/portal/server';
-import {callbackUrl,decodeAttempt,decryptTokens,encryptTokens,exchangeCode,oauthCookie,ready,stateMatches} from '@/lib/portal/direct-wearables';
+import {decodeAttempt,encryptTokens,exchangeCode,oauthCookie,ready,stateMatches} from '@/lib/portal/direct-wearables';
 
 const finish=(status:string)=>Response.redirect('https://cgp-dvotion.vercel.app/portal?tab=wearables&device='+encodeURIComponent(status),303);
 export async function GET(request:Request){
  const query=new URL(request.url).searchParams;
  const jar=await cookies();
  const attempt=decodeAttempt(jar.get(oauthCookie)?.value);
- jar.delete(oauthCookie); // One-time, HttpOnly OAuth CSRF state.
+ jar.set(oauthCookie,'',{httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'lax',path:'/api/portal/wearables/callback',maxAge:0}); // Remove cookie at its original path (one-time state).
  if(!attempt||!stateMatches(query.get('state'),attempt.state))return finish('expired');
  if(query.has('error'))return finish('declined');
  const code=query.get('code');
