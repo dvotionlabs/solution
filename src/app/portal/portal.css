@@ -38,3 +38,14 @@ body:has(.portal-app) > .site-header,body:has(.portal-app) > .site-footer{displa
  .p-library-edit{margin-right:3px;width:23px;font-size:15px}
 }
 @media(max-width:350px){.p-library-grid{gap:6px}.p-library-tile-open{padding:8px 3px 8px 6px}}
+
+/* Minimal install CTA; does not change athlete programmes or navigation. */
+.p-pwa-setup{max-width:440px;margin-top:20px}
+.p-pwa-install{display:inline-flex;align-items:center;gap:10px;min-height:41px;padding:8px 13px;border:1px solid #a2b890;border-radius:7px;background:#e7efd8;color:#304429;font-size:12px;font-weight:600}
+.p-pwa-install:hover{background:#d9edaf}
+.p-pwa-install-help{max-width:410px;border:1px solid var(--p-line);background:var(--p-paper);border-radius:8px;padding:13px 14px;margin-top:9px}
+.p-pwa-install-help p{font-size:12px;line-height:1.55;color:var(--p-muted);margin:0 0 8px}
+.p-pwa-install-help p:last-child{margin-bottom:0}
+.p-pwa-install-help strong{color:var(--p-ink)}
+.p-workspace .p-pwa-setup{margin-top:28px}
+@media(max-width:760px){.p-login-intro .p-pwa-setup{margin-top:18px}.p-pwa-install{font-size:12px}.p-workspace .p-pwa-setup{margin-top:24px}}
