@@ -34,7 +34,7 @@ test('List supports arrow reordering and direct jump to a numbered position',()=
  assert.ok(ui.includes('onDrop={onReorder?'));
  assert.ok(ui.includes('Move up'));
  assert.ok(ui.includes('Move down'));
- assert.ok(ui.includes('Move '+display+' to position'));
+ assert.ok(ui.includes("'Move '+display+' to position'"));
  assert.ok(ui.includes('await onReorder(next)'));
  assert.ok(ui.includes('onArchive(assignment.id)'));
 });
