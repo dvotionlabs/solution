@@ -1,5 +1,6 @@
 export type Profile={id:string;user_id:string|null;email:string;name:string;role:'athlete'|'admin';active:boolean;created_at:string};
 export type Credit={id:string;client_id:string;label:string;quantity:number;starts_on:string;expires_on:string|null;source_reference:string|null};
+export type MonthlyPlan={client_id:string;sessions_per_month:4|8;start_month:string};
 export type Booking={id:string;client_id:string;credit_id:string|null;title:string;starts_at:string;ends_at:string;location:string;status:'scheduled'|'completed'|'cancelled'|'no_show';notes:string};
 export type Exercise={id:string;title:string;category:string;youtube_id:string|null;cues:string;active:boolean};
 export type Homework={id:string;client_id:string;exercise_id:string;prescription:string;coach_note:string;title_override:string|null;active:boolean;sort_order:number;created_at:string};
@@ -14,7 +15,7 @@ export function orderHomework<T extends Pick<Homework,'id'|'sort_order'|'created
 export type HomeworkLog={id:string;homework_id:string;client_id:string;done_on:string};
 export type Connection={id:string;client_id:string;provider:string;status:'pending'|'connected'|'revoked'|'error';synced_at:string|null;consent_at:string};
 export type Metric={connection_id:string;day:string;kind:'daily'|'sleep';source_id:string;steps:number|null;sleep_seconds:number|null;hrv_rmssd:number|null;hrv_sdnn:number|null;resting_hr:number|null;measured_at:string;received_at:string};
-export type PortalData={asOf:string;profile:Profile;clients:Profile[];credits:Credit[];bookings:Booking[];exercises:Exercise[];homework:Homework[];logs:HomeworkLog[];connections:Connection[];metrics:Metric[];youtubeChannel:string;wearablesReady:boolean;providerReady:Record<'WHOOP'|'OURA'|'GARMIN',boolean>;providers:string[]};
+export type PortalData={asOf:string;profile:Profile;clients:Profile[];credits:Credit[];bookings:Booking[];exercises:Exercise[];homework:Homework[];logs:HomeworkLog[];connections:Connection[];metrics:Metric[];youtubeChannel:string;monthlyPlans:MonthlyPlan[];wearablesReady:boolean;providerReady:Record<'WHOOP'|'OURA'|'GARMIN',boolean>;providers:string[]};
 export const providers=['GARMIN','WHOOP','OURA','FITBIT','POLAR','SUUNTO','WITHINGS'];
 export function londonDay(date=new Date()){return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);}
 export function sessionBalance(credits:Credit[],bookings:Booking[],today=londonDay()){
