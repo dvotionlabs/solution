@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useState} from 'react';
-import type {MonthlyPlan} from '@/lib/portal/model';
+import {londonDay,type MonthlyPlan} from '@/lib/portal/model';
 
 /** Set the recurring monthly allowance once per athlete; no billing changes. */
 export default function MonthlyPlanControl({
@@ -30,6 +30,9 @@ export default function MonthlyPlanControl({
     <option value="8">8 sessions / month</option>
    </select>
   </label>
+  {plan&&<p className="p-monthly-plan-start">{plan.start_month>londonDay()?
+   'Monthly renewals start on '+new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric'}).format(new Date(plan.start_month+'T12:00:00Z')):
+   'Monthly allowance active from '+new Intl.DateTimeFormat('en-GB',{month:'long',year:'numeric'}).format(new Date(plan.start_month+'T12:00:00Z'))}</p>}
   {saving&&<span className="p-muted p-small" role="status">Saving…</span>}
   {error&&<p className="p-error" role="alert">{error}</p>}
   <p className="p-monthly-plan-foot">Allocations do not charge clients. Existing manually added packs are preserved; overlapping packs won't be duplicated.</p>
