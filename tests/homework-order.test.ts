@@ -5,7 +5,7 @@ import {orderHomework,type Homework} from '../src/lib/portal/model.ts';
 
 const item=(id:string,sort_order:number,created_at:string):Homework=>({
  id,sort_order,created_at,client_id:'athlete-a',exercise_id:'demo',
- prescription:'3 × 10',coach_note:'',active:true
+ prescription:'3 × 10',coach_note:'',display_title:null,active:true
 });
 
 test('Homework stays in the coach-specified sequence rather than insertion order',()=>{
@@ -30,7 +30,7 @@ test('Coach has move buttons and drag/drop while athlete has no editing controls
  assert.ok(ui.includes("title=\"Move up\""));
  assert.ok(ui.includes("title=\"Move down\""));
  assert.ok(ui.includes("onDrop={onReorder?"));
- assert.ok(ui.includes("draggable={!savingOrder}"));
+ assert.ok(ui.includes("draggable={!savingOrder&&!savingEdit&&!savingAdd}"));
  assert.ok(admin.includes("action:'homework-reorder',client_id:client.id,order"));
  assert.ok(athlete.includes("import HomeworkGrid from './CompactHomework'"));
  assert.ok(!athlete.includes('onReorder='));
