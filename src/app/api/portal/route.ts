@@ -71,6 +71,17 @@ export async function POST(request:Request){
    const row={client_id:idValue(b.client_id),exercise_id:idValue(b.exercise_id),prescription:textValue(b.prescription,1,500),coach_note:textValue(b.coach_note||'',0,2000),active:true};
    const r=await db.from('cgp_homework').insert(row);if(r.error)throw new Error('Homework could not be assigned.');return reply({ok:true});
   }
+  if(b.action==='homework-update'){
+   const assignment=idValue(b.id),client=idValue(b.client_id);
+   // Changes are specific to one athlete. Never rename the shared library exercise.
+   const title=textValue(b.display_title??'',0,120);
+   const prescription=textValue(b.prescription,1,500);
+   const note=textValue(b.coach_note||'',0,2000);
+   const r=await db.from('cgp_homework').update({display_title:title||null,prescription,coach_note:note})
+    .eq('id',assignment).eq('client_id',client).eq('active',true).select('id').maybeSingle();
+   if(r.error||!r.data)throw new Error('This homework assignment could not be updated. Refresh and try again.');
+   return reply({ok:true,message:'Homework updated.'});
+  }
   if(b.action==='homework-reorder'){
    const client=idValue(b.client_id);
    if(!Array.isArray(b.order)||b.order.length>1000||b.order.some(id=>!uuid(id)))throw new Error('Please refresh before changing the exercise order.');
