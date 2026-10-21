@@ -2,7 +2,7 @@ export type Profile={id:string;user_id:string|null;email:string;name:string;role
 export type Credit={id:string;client_id:string;label:string;quantity:number;starts_on:string;expires_on:string|null;source_reference:string|null};
 export type Booking={id:string;client_id:string;credit_id:string|null;title:string;starts_at:string;ends_at:string;location:string;status:'scheduled'|'completed'|'cancelled'|'no_show';notes:string};
 export type Exercise={id:string;title:string;category:string;youtube_id:string|null;cues:string;active:boolean};
-export type Homework={id:string;client_id:string;exercise_id:string;prescription:string;coach_note:string;active:boolean;sort_order:number;created_at:string};
+export type Homework={id:string;client_id:string;exercise_id:string;prescription:string;coach_note:string;display_title:string|null;active:boolean;sort_order:number;created_at:string};
 /** Sort only local homework data, never another athlete's assignments. */
 export function orderHomework<T extends Pick<Homework,'id'|'sort_order'|'created_at'>>(items:T[]):T[]{
  return [...items].sort((a,b)=>{
