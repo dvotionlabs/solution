@@ -6,6 +6,7 @@ CGP reads the coach's **primary Google Calendar** with the **calendar.events.rea
 The admin creates explicit case-insensitive exact-title mappings, e.g.:
 - Google event title `Akash` → CGP athlete `Aakash Kabra`.
 - Google event title `Aakash` → the same athlete.
+- Google event title `Alex` → CGP athlete `Alexander Christie`.
 
 `Akash PT`, `Discuss Akash`, `Aakash and Susie`, private meetings, all-day events, unmatched names, and unexpected event types are **not** imported automatically. If the coach wants one of those titles matched, they can explicitly add that exact title to one athlete. A title cannot be assigned to two athletes.
 
@@ -14,11 +15,12 @@ CGP imports only the date/time and matched client identity; its own booking titl
 ## Calendar changes and credits
 - A new confirmed event creates a scheduled booking for the mapped athlete.
 - A rescheduled event updates that particular future booking.
-- Removing or renaming the event cancels its corresponding future **scheduled** booking.
-- Completed/missed bookings are retained; Google cannot overwrite coach-verified attendance.
+- Removing or renaming the event cancels the corresponding linked booking. If a completed appointment is removed within 45 days, its completion and reserved credit are reversed.
+- Past calendar-linked appointments with a matching active event are marked completed automatically after their scheduled end. Manual CGP bookings remain under coach control.
 - The importer never touches manual bookings unless they match the same athlete/start/end exactly; in that case it links rather than duplicates the appointment.
+- Each athlete may have a coach-configured 4- or 8-session monthly allowance, valid from the 1st to the end of the month. Monthly allocations renew through Vercel cron even before Google OAuth is connected; payments remain separate. Existing overlapping manual session packs block duplicates.
 - A valid available client credit pack is automatically assigned where possible, reserving one slot. Booked reservations and completed-session deductions are distinct. If no eligible pack exists, the appointment still appears with no credit allocated; add or assign an appropriate pack.
-- The sync checks a rolling 75-day future horizon, expands recurring calendar events, rejects incomplete result pagination and never auto-completes a session.
+- Sync checks a rolling 45 days backward and 75 days forward, expands recurring events and rejects incomplete Google pagination. Deletions older than the lookback window require manual correction.
 - Bookings with an overlapping existing confirmed session are skipped rather than leaking a different client's appointment.
 - Only the coach can manage mappings; athletes cannot read them.
 
