@@ -200,3 +200,34 @@ body:has(.portal-app) > .site-header,body:has(.portal-app) > .site-footer{displa
  .p-hw-type-switch button{font-size:11px;padding:7px 8px}
  .p-hw-edit-footer .p-button,.p-hw-form-footer .p-button{width:100%;justify-content:center}
 }
+
+/* Athlete home: programme first, daily metrics before the quieter session ledger. */
+.p-homework-first{margin-top:8px}
+.p-home-wearable-help{font-size:11px;color:var(--p-muted);margin:10px 0 0}
+.p-home-session{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:19px 21px;background:#e8efe1;border:1px solid #d4e0cd;border-radius:9px}
+.p-home-session .p-kicker{font-size:10px;margin:0;color:#718166}
+.portal-app .p-home-session h3{font-size:19px;line-height:1.3;font-weight:600;letter-spacing:-.35px;margin:7px 0 5px}
+.p-home-session p{font-size:12px;line-height:1.45;color:#617359}
+.p-home-session .p-badge{flex-shrink:0}
+.p-home-balance{display:flex;align-items:center;gap:20px;padding:16px 19px;background:var(--p-paper);border:1px solid var(--p-line);border-radius:9px}
+.p-home-balance-primary{display:flex;align-items:baseline;gap:9px;flex-shrink:0}
+.p-home-balance-primary strong{font-size:32px;font-weight:600;line-height:1;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.p-home-balance-primary span{font-size:12px;color:var(--p-muted)}
+.p-home-balance>p{font-size:11px;line-height:1.4;color:#73836c;margin-left:auto;text-align:right}
+.p-monthly-plan-control{display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,210px);align-items:center;gap:12px 20px;padding:18px 21px;background:#f1f5ea;border:1px solid #d7e5d2;border-radius:10px;margin:18px 0}
+.p-monthly-plan-control h2{font-size:17px!important;line-height:1.2!important;margin:0 0 5px!important}
+.p-monthly-plan-control>div>p{font-size:12px;line-height:1.5;color:#66745f;max-width:560px}
+.p-monthly-plan-control>label{display:grid;gap:6px;font-size:11px;color:#526b4d;font-weight:600}
+.p-monthly-plan-control select{min-height:43px!important;max-width:100%;font-size:12px!important}
+.p-monthly-plan-control .p-monthly-plan-foot{grid-column:1/-1;font-size:11px;line-height:1.5;color:#73846d;border-top:1px solid #d8e4d1;padding-top:10px;margin:0}
+.p-monthly-plan-control .p-error{grid-column:1/-1;margin:0!important}
+@media(max-width:760px){
+ .p-homework-first{margin-top:2px}
+ .p-home-session{padding:14px 15px;gap:10px;flex-wrap:wrap}
+ .portal-app .p-home-session h3{font-size:16px}
+ .p-home-balance{padding:14px 15px;gap:9px;align-items:flex-start;flex-direction:column}
+ .p-home-balance-primary strong{font-size:28px}
+ .p-home-balance>p{text-align:left;margin-left:0}
+ .p-monthly-plan-control{grid-template-columns:1fr;gap:12px;padding:15px 16px}
+ .p-monthly-plan-control .p-monthly-plan-foot{grid-column:auto}
+}
