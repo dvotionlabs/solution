@@ -31,7 +31,7 @@ export default function GoogleCalendarSettings({clients}:{clients:Profile[]}){
     throw new Error('Google did not provide an authorisation page.');
    }
    if(action==='sync'){
-    setMessage(data.connected===false?'Connect Google Calendar first.':`Calendar checked: ${data.created||0} new bookings, ${data.updated||0} updated, ${data.cancelled||0} cancelled.`);
+    setMessage(data.connected===false?'Connect Google Calendar first.':`Calendar checked: ${data.created||0} new, ${data.completed||0} completed, ${data.cancelled||0} cancelled. Monthly allocations checked.`);
     window.dispatchEvent(new Event('focus'));
    }else setMessage(action==='disconnect'?'Disconnected. Previously imported bookings remain in CGP.':'Saved.');
    await reload();
@@ -72,7 +72,7 @@ export default function GoogleCalendarSettings({clients}:{clients:Profile[]}){
     <label>Assign to athlete<select value={clientId||clientOptions[0]?.id||''} onChange={e=>setClientId(e.target.value)} required><option value="" disabled>Choose a client</option>{clientOptions.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
     <button className="p-button p-secondary" disabled={Boolean(busy)||!clientOptions.length||alias.trim().length<2}>Add name mapping +</button>
    </form>
-   <p className="p-muted p-small">New bookings reserve an available session pack if one exists. Otherwise, the appointment is shown but its session credit must be assigned later. Mark attendance in CGP when the session is completed.</p>
+   <p className="p-muted p-small">Matched events appear only in the named athlete's diary. Once a calendar event has ended, CGP automatically marks that session completed; deleting it within the recent sync window cancels it and restores any reserved credit. Existing manual CGP appointments are never auto-completed. Each client's 4- or 8-session monthly plan is configured from their coach profile.</p>
   </>}
   {message&&<p className="p-info" role="status">{message}</p>}
   {error&&<p className="p-error" role="alert">{error}</p>}
