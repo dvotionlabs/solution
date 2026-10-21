@@ -13,11 +13,11 @@ export async function GET(){try{
   allRows((a,b)=>db.from('cgp_profiles').select('*').order('name').order('id').range(a,b)),allRows((a,b)=>db.from('cgp_session_credits').select('*').order('id').range(a,b)),
   allRows((a,b)=>db.from('cgp_bookings').select('*').order('starts_at',{ascending:false}).order('id').range(a,b)),allRows((a,b)=>db.from('cgp_exercises').select('*').order('title').order('id').range(a,b)),
   allRows((a,b)=>db.from('cgp_homework').select('*').order('client_id').order('sort_order').order('created_at',{ascending:false}).order('id').range(a,b)),allRows((a,b)=>db.from('cgp_homework_logs').select('*').gte('done_on',new Date(Date.now()-30*86400000).toISOString().slice(0,10)).order('id').range(a,b)),
-  allRows((a,b)=>db.from('cgp_wearable_connections').select('id,client_id,provider,status,synced_at,consent_at').order('id').range(a,b)),allRows((a,b)=>db.from('cgp_wearable_metrics').select('*').gte('day',new Date(Date.now()-30*86400000).toISOString().slice(0,10)).order('day',{ascending:false}).order('connection_id').order('kind').order('source_id').range(a,b)),db.from('cgp_portal_settings').select('*')
+  allRows((a,b)=>db.from('cgp_wearable_connections').select('id,client_id,provider,status,synced_at,consent_at').order('id').range(a,b)),allRows((a,b)=>db.from('cgp_wearable_metrics').select('*').gte('day',new Date(Date.now()-30*86400000).toISOString().slice(0,10)).order('day',{ascending:false}).order('connection_id').order('kind').order('source_id').range(a,b)),db.from('cgp_portal_settings').select('*'),db.from('cgp_monthly_plans').select('client_id,sessions_per_month,start_month')
  ]);
  if(results.some(r=>r.error))throw new PortalError('Your portal could not be loaded. Please try again.',503);
- const [clients,credits,bookings,exercises,homework,logs,connections,metrics,settings]=results.map(r=>r.data||[]);
- return reply({asOf:new Date().toISOString(),profile,clients:isAdmin?clients:[],credits,bookings,exercises,homework,logs,connections,metrics,youtubeChannel:settings.find(s=>s.key==='youtube_channel')?.value||'',wearablesReady:ready('WHOOP')||ready('OURA'),providerReady:{WHOOP:ready('WHOOP'),OURA:ready('OURA'),GARMIN:false},providers:['WHOOP','OURA','GARMIN']});
+ const [clients,credits,bookings,exercises,homework,logs,connections,metrics,settings,monthlyPlans]=results.map(r=>r.data||[]);
+ return reply({asOf:new Date().toISOString(),profile,clients:isAdmin?clients:[],credits,bookings,exercises,homework,logs,connections,metrics,youtubeChannel:settings.find(s=>s.key==='youtube_channel')?.value||'',monthlyPlans,wearablesReady:ready('WHOOP')||ready('OURA'),providerReady:{WHOOP:ready('WHOOP'),OURA:ready('OURA'),GARMIN:false},providers:['WHOOP','OURA','GARMIN']});
  }catch(error){return fail(error);}}
 export async function POST(request:Request){
  if(!sameOrigin(request))return reply({error:'Please use the CGP website.'},403);
@@ -39,6 +39,19 @@ export async function POST(request:Request){
    const quantity=Number(b.quantity);if(!Number.isInteger(quantity)||quantity<1||quantity>500)throw new Error('Enter a session total between 1 and 500.');
    const r=await db.from('cgp_session_credits').insert({client_id:idValue(b.client_id),label:textValue(b.label,2,120),quantity,starts_on:dateValue(b.starts_on),expires_on:b.expires_on?dateValue(b.expires_on):null,source_reference:b.source_reference?textValue(b.source_reference,1,150):null});
    if(r.error)throw new Error(r.error.code==='23505'?'That payment reference has already been credited.':'Session pack could not be added. Check the dates.');return reply({ok:true});
+  }
+  if(b.action==='monthly-plan'){
+   const client=idValue(b.client_id);
+   const count=b.sessions_per_month===null||b.sessions_per_month===''?0:Number(b.sessions_per_month);
+   if(![0,4,8].includes(count))throw new Error('Choose no automatic monthly plan, 4 sessions, or 8 sessions.');
+   const r=await db.rpc('cgp_monthly_plan_set',{p_client:client,p_sessions:count});
+   if(r.error)throw new Error(r.error.message||'Monthly sessions could not be configured.');
+   const blocked=Number(r.data?.allocations?.blocked||0);
+   return reply({ok:true,
+    message:count===0?'Monthly renewals stopped; existing allocations remain unchanged.':
+     blocked?'Monthly plan saved. Existing session packs overlap this month, so duplicate credits were not added. Review session allocations.':
+     'Monthly plan saved. Sessions renew from the 1st through the last day each month.',
+    allocation:r.data});
   }
   if(b.action==='booking'){
    const starts=timestamp(b.starts_at),ends=timestamp(b.ends_at);if(Date.parse(ends)<=Date.parse(starts)||Date.parse(ends)-Date.parse(starts)>8*3600000)throw new Error('Check the session start and end time.');
