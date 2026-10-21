@@ -71,6 +71,28 @@ export async function POST(request:Request){
    const row={client_id:idValue(b.client_id),exercise_id:idValue(b.exercise_id),prescription:textValue(b.prescription,1,500),coach_note:textValue(b.coach_note||'',0,2000),active:true};
    const r=await db.from('cgp_homework').insert(row);if(r.error)throw new Error('Homework could not be assigned.');return reply({ok:true});
   }
+  if(b.action==='homework-edit'){
+   const id=idValue(b.id),clientId=idValue(b.client_id),exerciseId=idValue(b.exercise_id);
+   const [existing,source]=await Promise.all([
+    db.from('cgp_homework').select('id,client_id,exercise_id').eq('id',id)
+     .eq('client_id',clientId).eq('active',true).maybeSingle(),
+    db.from('cgp_exercises').select('id,title,active').eq('id',exerciseId).maybeSingle(),
+   ]);
+   if(existing.error||!existing.data)throw new PortalError('This athlete assignment is unavailable. Refresh the page.',404);
+   if(source.error||!source.data||(!source.data.active&&existing.data.exercise_id!==exerciseId))
+    throw new PortalError('Select a valid library exercise.',400);
+   const title=textValue(b.title,2,120);
+   const update={
+    exercise_id:exerciseId,
+    title_override:title===source.data.title?null:title,
+    prescription:textValue(b.prescription,1,500),
+    coach_note:textValue(b.coach_note||'',0,2000),
+   };
+   const result=await db.from('cgp_homework').update(update)
+    .eq('id',id).eq('client_id',clientId).eq('active',true).select('id').maybeSingle();
+   if(result.error||!result.data)throw new Error('Could not update the athlete assignment.');
+   return reply({ok:true,message:'Homework updated.'});
+  }
   if(b.action==='homework-reorder'){
    const client=idValue(b.client_id);
    if(!Array.isArray(b.order)||b.order.length>1000||b.order.some(id=>!uuid(id)))throw new Error('Please refresh before changing the exercise order.');
