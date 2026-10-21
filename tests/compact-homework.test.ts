@@ -11,7 +11,7 @@ test('Athletes and coaches use the same concise programme list including athlete
  assert.match(athlete,/import HomeworkGrid from '\.\/CompactHomework'/);
  assert.ok(admin.includes('<HomeworkGrid key={client.id} assignments={data.homework.filter'));
  assert.ok(athlete.includes('<HomeworkGrid assignments={homework}'));
- assert.ok(athlete.includes('homework.filter(h=>h.active).slice(0,2)'));
+ assert.ok(athlete.includes('homework.filter(h=>h.active)}'), 'The athlete homepage now shows the full programme, not just two exercises');
 });
 
 test('The single-column list shows names, prescriptions and completion without embedded video cards',()=>{
