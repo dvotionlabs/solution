@@ -1,15 +1,17 @@
 'use client';
 import {useEffect,useState} from 'react';
-import type {PortalData} from '@/lib/portal/model';
+import {sessionBalance,type PortalData} from '@/lib/portal/model';
 import type {Action} from './Portal';
 import {Balance,BookingList,Metrics,dateTime} from './Shared';
 import HomeworkGrid from './CompactHomework';
 import ExerciseLibrary from './ExerciseLibrary';
 export default function Athlete({data,tab,action,navigate,onError}:{data:PortalData;tab:string;action:Action;navigate:(tab:string)=>void;onError:(error:string)=>void}){
  const [autoChecked,setAutoChecked]=useState(false),[library,setLibrary]=useState(false),[period,setPeriod]=useState('upcoming'),[consent,setConsent]=useState(false),[busy,setBusy]=useState(''),[source,setSource]=useState('');
- const id=data.profile.id,bookings=data.bookings.filter(b=>b.client_id===id),credits=data.credits.filter(c=>c.client_id===id),homework=data.homework.filter(h=>h.client_id===id),connections=data.connections.filter(c=>c.client_id===id&&c.status!=='revoked');
+ const id=data.profile.id,bookings=data.bookings.filter(b=>b.client_id===id&&b.status!=='cancelled'),credits=data.credits.filter(c=>c.client_id===id),homework=data.homework.filter(h=>h.client_id===id),connections=data.connections.filter(c=>c.client_id===id&&c.status!=='revoked');
  const live=connections.filter(c=>c.status==='connected');const selected=live.find(c=>c.id===source)||live[0];const metrics=data.metrics.filter(m=>m.connection_id===selected?.id);
  const upcoming=bookings.filter(b=>b.status==='scheduled'&&Date.parse(b.ends_at)>=Date.parse(data.asOf)).sort((a,b)=>a.starts_at.localeCompare(b.starts_at));
+ const balance=sessionBalance(credits,bookings);
+ const monthlyPlan=data.monthlyPlans.find(p=>p.client_id===id);
  async function run(body:Record<string,unknown>,endpoint?:string){try{return await action(body,endpoint);}catch(e){onError(e instanceof Error?e.message:'Please try again.');}}
  async function connect(provider:string){
   setBusy(provider);
@@ -53,5 +55,28 @@ export default function Athlete({data,tab,action,navigate,onError}:{data:PortalD
    <button className="p-button p-secondary" disabled={!enabled||!consent||Boolean(busy)} onClick={()=>connect(provider)}>{busy===provider?'Connecting…':enabled?'Connect device':'Awaiting setup'} ↗</button>}
   </article>;
  })}</div></section>{metrics.length>0&&<section className="p-panel"><h2>Recent readings</h2><p className="p-muted">Last 30 days. Different devices may report HRV differently; RMSSD and SDNN are shown separately.</p><div className="p-table-wrap"><table><thead><tr><th>Date</th><th>Source</th><th>Steps</th><th>Sleep</th><th>HRV · RMSSD</th><th>HRV · SDNN</th></tr></thead><tbody>{metrics.slice(0,60).map(m=><tr key={`${m.kind}-${m.source_id}`}><td>{m.day}</td><td>{m.kind}</td><td>{m.steps?.toLocaleString()??'—'}</td><td>{m.sleep_seconds===null?'—':`${(m.sleep_seconds/3600).toFixed(1)} h`}</td><td>{m.hrv_rmssd===null?'—':`${m.hrv_rmssd} ms`}</td><td>{m.hrv_sdnn===null?'—':`${m.hrv_sdnn} ms`}</td></tr>)}</tbody></table></div></section>}</>;
- return <>{header(`Hello, ${data.profile.name.split(' ')[0]}.`,'Everything you need for your next step.')}<div className="p-overview-grid"><Balance credits={credits} bookings={bookings}/><section className="p-next-session"><span className="p-kicker">NEXT SESSION</span>{upcoming[0]?<><h2>{dateTime(upcoming[0].starts_at)}</h2><p>{upcoming[0].title}</p><p>{upcoming[0].location}</p><button className="p-link" onClick={()=>navigate('bookings')}>View your bookings ↗</button></>:<><h2>Let’s get your next<br/>session in the diary.</h2><p>No upcoming booking has been added yet.</p><a className="p-link" href="mailto:chrisgkoufas.performance@gmail.com">Contact Chris ↗</a></>}</section></div><div className="p-section-head"><h2>Your homework</h2><button className="p-link" onClick={()=>navigate('homework')}>View all ↗</button></div><HomeworkGrid assignments={homework.filter(h=>h.active).slice(0,2)} exercises={data.exercises} logs={data.logs} onDone={(homework_id,done)=>{void run({action:'homework-done',homework_id,done});}}/><div className="p-section-head"><h2>{selected?`${selected.provider} · Latest readings`:'Your daily picture'}</h2><button className="p-link" onClick={()=>navigate('wearables')}>{selected?'View wearables':'Connect a device'} ↗</button></div><Metrics metrics={metrics}/></>;
+ return <>{header('Hello, '+data.profile.name.split(' ')[0]+'.','Your training comes first. The rest is here when you need it.')}
+  <div className="p-section-head p-homework-first"><h2>Your homework</h2><button className="p-link" onClick={()=>navigate('homework')}>Open programme ↗</button></div>
+  <HomeworkGrid assignments={homework.filter(h=>h.active)} exercises={data.exercises} logs={data.logs}
+   onDone={(homework_id,done)=>{void run({action:'homework-done',homework_id,done});}}/>
+  <div className="p-section-head"><h2>Daily activity &amp; recovery</h2>
+   <button className="p-link" onClick={()=>navigate('wearables')}>{selected?'View wearable data':'Connect a wearable'} ↗</button>
+  </div>
+  <Metrics metrics={metrics}/>
+  {!selected&&<p className="p-home-wearable-help">Steps, sleep and HRV will appear here when you connect a supported wearable.</p>}
+  <div className="p-section-head"><h2>Your next session</h2><button className="p-link" onClick={()=>navigate('bookings')}>All sessions ↗</button></div>
+  <section className="p-home-session">
+   {upcoming[0]?<>
+    <div><span className="p-kicker">NEXT SESSION</span><h3>{dateTime(upcoming[0].starts_at)}</h3><p>{upcoming[0].title} · {upcoming[0].location}</p></div>
+    <span className="p-badge scheduled">Booked</span>
+   </>:<><div><span className="p-kicker">YOUR DIARY</span><h3>No upcoming session</h3><p>Your coach will add your appointment when it is arranged.</p></div>
+    <a className="p-link" href="mailto:chrisgkoufas.performance@gmail.com">Contact Chris ↗</a></>}
+  </section>
+  <div className="p-section-head"><h2>Session balance</h2><button className="p-link" onClick={()=>navigate('bookings')}>View history ↗</button></div>
+  <section className="p-home-balance" aria-label="Your remaining coaching sessions">
+   <div className="p-home-balance-primary"><strong>{balance.remaining}</strong><span>sessions remaining</span></div>
+   <p>{balance.booked} booked · {balance.used} used · {balance.available} available to book
+    {monthlyPlan&&<span> · {monthlyPlan.sessions_per_month} sessions/month</span>}</p>
+  </section>
+ </>;
 }
