@@ -231,3 +231,4 @@ body:has(.portal-app) > .site-header,body:has(.portal-app) > .site-footer{displa
  .p-monthly-plan-control{grid-template-columns:1fr;gap:12px;padding:15px 16px}
  .p-monthly-plan-control .p-monthly-plan-foot{grid-column:auto}
 }
+.p-monthly-plan-start{grid-column:1/-1;font-size:11px!important;color:#4a6e3d!important;margin:0!important;font-weight:600}
