@@ -5,7 +5,7 @@ import {orderHomework,type Homework} from '../src/lib/portal/model.ts';
 
 const item=(id:string,sort_order:number,created_at:string):Homework=>({
  id,sort_order,created_at,client_id:'athlete-a',exercise_id:'demo',
- prescription:'3 × 10',coach_note:'',active:true
+ prescription:'3 × 10',coach_note:'',title_override:null,active:true
 });
 
 test('Homework stays in the coach-specified sequence rather than insertion order',()=>{
