@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'src/lib/gocardless.ts'
+      - 'src/lib/dvotion-bridge.ts'
+      - 'src/app/api/dvotion/**'
       - 'src/lib/pricing.ts'
       - 'src/lib/client-pricing.ts'
       - 'src/lib/dvotion-pricing.ts'
