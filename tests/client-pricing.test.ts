@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { authorizedClientPlan, clientPlanQuote, resolveClientCode } from '../src/lib/client-pricing.ts';
+import { authorizedClientPlan, clientPlanQuote, getPaymentPlan, resolveClientCode } from '../src/lib/client-pricing.ts';
 import { billingRequestPayload, subscriptionForBillingRequest } from '../src/lib/gocardless.ts';
 import { packOrder } from '../src/lib/stripe-orders.ts';
 
@@ -30,6 +30,38 @@ test('client prices are restricted to the matching code and the December start d
     assert.equal(clientPlanQuote('TESTB', after)?.amount, 38000);
     assert.equal(clientPlanQuote('TESTA', after)?.kind, 'monthly');
   } finally { if (old === undefined) delete process.env.CGP_CLIENT_PLANS; else process.env.CGP_CLIENT_PLANS = old; }
+});
+
+test('two existing clients can set up their agreed DD8 rates now without activating December plans', () => {
+  const prior = process.env.CGP_CLIENT_PLANS;
+  const priorOverrides = process.env.CGP_CLIENT_PLAN_OVERRIDES;
+  process.env.CGP_CLIENT_PLANS = JSON.stringify([
+    { id: 'client-202612-01', code: 'IRISF', basePlanId: 'in-person-dd8', amount: 70400 },
+    { id: 'client-202612-02', code: 'ALEXC', basePlanId: 'in-person-dd8', amount: 76000 },
+    { id: 'client-202612-other', code: 'OTHER', basePlanId: 'in-person-dd8', amount: 80000 },
+  ]);
+  process.env.CGP_CLIENT_PLAN_OVERRIDES = JSON.stringify([
+    { id: 'client-202611-irisf', code: 'IRISF', basePlanId: 'in-person-dd8', amount: 70000, availableFrom: '2026-11-08T00:00:00Z' },
+    { id: 'client-202611-alexc', code: 'ALEXC', basePlanId: 'in-person-dd8', amount: 76000, availableFrom: '2026-11-08T00:00:00Z' },
+  ]);
+  try {
+    const today = Date.parse('2026-11-08T17:00:00Z');
+    assert.equal(clientPlanQuote('IRISF', today)?.perSession, 8750);
+    assert.equal(clientPlanQuote('IRISF', today)?.amount, 70000);
+    assert.equal(clientPlanQuote('ALEXC', today)?.amount, 76000);
+    assert.equal(clientPlanQuote('IRISF', today)?.active, true);
+    assert.equal(clientPlanQuote('ALEXC', today)?.active, true);
+    assert.equal(authorizedClientPlan('client-202611-irisf', 'IRISF', today)?.amount, 70000);
+    assert.equal(authorizedClientPlan('client-202611-alexc', 'ALEXC', today)?.amount, 76000);
+    assert.equal(authorizedClientPlan('client-202611-alexc', 'IRISF', today), undefined);
+    assert.equal(clientPlanQuote('OTHER', today)?.active, false);
+    assert.equal(getPaymentPlan('client-202612-01')?.amount, 70400); // old webhook IDs remain immutable
+    assert.equal(getPaymentPlan('client-202611-irisf')?.amount, 70000);
+    assert.equal(authorizedClientPlan('client-202611-irisf', 'IRISF', Date.parse('2026-11-07T23:59:59Z')), undefined);
+  } finally {
+    if (prior === undefined) delete process.env.CGP_CLIENT_PLANS; else process.env.CGP_CLIENT_PLANS = prior;
+    if (priorOverrides === undefined) delete process.env.CGP_CLIENT_PLAN_OVERRIDES; else process.env.CGP_CLIENT_PLAN_OVERRIDES = priorOverrides;
+  }
 });
 
 test('fulfilment preserves an agreed client rate and rejects altered totals or payment links', () => {

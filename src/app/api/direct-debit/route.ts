@@ -16,8 +16,9 @@ export async function POST(request:NextRequest){
   const raw=await request.text();if(raw.length>1000)return NextResponse.json({error:'Invalid request.'},{status:400});const body=JSON.parse(raw);
   if(body?.consent!==true||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(body.requestId||''))return NextResponse.json({error:'Please confirm your coaching and payment agreement.'},{status:400});
   const hasClientCode=body.clientCode!==undefined;
-  if(hasClientCode&&!resolveClientCode(body.clientCode))return NextResponse.json({error:'Please apply a valid client code.'},{status:400});
-  if(hasClientCode&&!clientPricingActive())return NextResponse.json({error:'Your new client rate is available from 1 December 2026.'},{status:409});
+  const requestedClientPlan=hasClientCode?resolveClientCode(body.clientCode):undefined;
+  if(hasClientCode&&!requestedClientPlan)return NextResponse.json({error:'Please apply a valid client code.'},{status:400});
+  if(hasClientCode&&!clientPricingActive(Date.now(),requestedClientPlan))return NextResponse.json({error:'Your agreed client rate is not available yet.'},{status:409});
   const dvotion=getDvotionPlan(body.planId);
   if(bridge&&(!dvotion||dvotion.retired||body.clientCode!==undefined||body.referredBy!==undefined||body.flowMode!=='dropin'))return NextResponse.json({error:'Invalid DVOTION checkout.'},{status:403});
   if(dvotion?.retired)return NextResponse.json({error:'This coaching plan is no longer available. Please choose a current plan from DVOTION.'},{status:409});
