@@ -82,8 +82,7 @@ export async function GET(request: NextRequest) {
     ),
     {width,height}
   );
-  image.headers.set("Cache-Control","public, max-age=300, s-maxage=3600");
-  image.headers.set("Content-Disposition",`inline; filename="cgp-30-minute-ad-${variant}.png"`);
-  return image;
+  const png = await image.arrayBuffer();
+  return new Response(png, {headers: {"Content-Type":"image/png","Cache-Control":"public, max-age=300, s-maxage=3600","Content-Disposition":`inline; filename="cgp-30-minute-ad-${variant}.png"`}});
   } catch (e) { console.error("CGP ad rendering", e); return new Response("Creative error: " + (e instanceof Error ? e.message : String(e)), {status: 500}); }
 }
