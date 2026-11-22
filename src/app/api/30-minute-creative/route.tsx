@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import sharp from "sharp";
 import type { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
@@ -49,7 +50,8 @@ export async function GET(request: NextRequest) {
   const photoResponse = await fetch(new URL(creative.photo, request.url), { cache: "force-cache" });
   if (!photoResponse.ok) return new Response("Source photograph not available", { status: 502 });
   const photoBytes = Buffer.from(await photoResponse.arrayBuffer());
-  const photoData = "data:image/webp;base64," + photoBytes.toString("base64");
+  const pngBytes = await sharp(photoBytes).png().toBuffer();
+  const photoData = "data:image/png;base64," + pngBytes.toString("base64");
 
   try {
   const image = new ImageResponse(
