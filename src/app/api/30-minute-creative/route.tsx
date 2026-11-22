@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
   const photoBytes = Buffer.from(await photoResponse.arrayBuffer());
   const photoData = "data:image/webp;base64," + photoBytes.toString("base64");
 
+  try {
   const image = new ImageResponse(
     (
       <div style={{display:"flex",position:"relative",width:"100%",height:"100%",background:"#20271f",fontFamily:"Arial, sans-serif",color:"#f5f5ef",overflow:"hidden"}}>
@@ -84,4 +85,5 @@ export async function GET(request: NextRequest) {
   image.headers.set("Cache-Control","public, max-age=300, s-maxage=3600");
   image.headers.set("Content-Disposition",`inline; filename="cgp-30-minute-ad-${variant}.png"`);
   return image;
+  } catch (e) { console.error("CGP ad rendering", e); return new Response("Creative error: " + (e instanceof Error ? e.message : String(e)), {status: 500}); }
 }
