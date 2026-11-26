@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { coaching, getPlan, money } from '@/lib/pricing';
 import { getDvotionPlan } from '@/lib/dvotion-pricing';
 import DirectDebitForm from '@/components/DirectDebitForm';
@@ -7,9 +7,10 @@ export const dynamic = 'force-dynamic';
 export default async function Checkout({ params }: { params: Promise<{ plan: string }> }) {
   const { plan: id } = await params;
   const dvotion = getDvotionPlan(id);
+  if (dvotion?.retired) permanentRedirect('https://dvotionlabs.com/book?enquire=coaching');
   const cgpPlan = getPlan(id);
   const plan = dvotion ?? cgpPlan;
-  if (!plan || plan.kind !== 'monthly' || dvotion?.retired) notFound();
+  if (!plan || plan.kind !== 'monthly') notFound();
   const service = cgpPlan ? coaching.find(c => c.slug === cgpPlan.coaching) : null;
   if (!dvotion && !service) notFound();
   const back = dvotion ? `https://dvotionlabs.com${dvotion.returnPath}` : `/coaching/${service!.slug}`;

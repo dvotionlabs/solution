@@ -22,12 +22,11 @@ test('the training app is retired while historical payment agreements remain rea
  assert.equal(subscriptionForBillingRequest(billing)?.amount,5000);
 });
 
-test('new DVOTION DD plans have exact monthly sessions and independent prices',()=>{
- const active=dvotionPlans.filter(p=>p.sessionsPerMonth&&!p.retired);
- assert.deepEqual(active.map(p=>[p.id,p.sessionsPerMonth,p.amount,p.perSession]),expected);
+test('DVOTION plans are closed to signup and preserve the agreed rates',()=>{
+ assert(dvotionPlans.every(p=>p.retired));
  for(const [id,sessions,amount,rate] of expected){
   const p=getDvotionPlan(id)!;
-  assert.equal(p.retired,undefined);
+  assert.equal(p.retired,true);
   assert.equal(p.sessionsPerWeek,null);
   assert.equal(p.amount,p.sessionsPerMonth!*p.perSession!);
   assert.equal(p.amount,sessions*rate);
@@ -97,9 +96,9 @@ test('online performance is separate from endurance and keeps older two-coach ag
  const combined=getDvotionPlan('dvotion-endurance-performance-online')!;
  assert.equal(performance.amount,20000);
  assert.equal(performance.serviceName,'Online Performance Coaching');
- assert.equal(performance.retired,undefined);
+ assert.equal(performance.retired,true);
  assert.equal(endurance.amount,15000);
- assert.equal(endurance.retired,undefined);
+ assert.equal(endurance.retired,true);
  assert.equal(combined.amount,28500);
  assert.equal(combined.retired,true);
  assert.equal(subscriptionForBillingRequest({
